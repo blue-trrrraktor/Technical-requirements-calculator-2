@@ -37,15 +37,17 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: transparent;
-            border: 1px solid #cbd5e1;
-            padding: 6px 12px;
+            background: #ffffffcc;
+            border: 1px solid #94a3b8;
+            padding: 8px 16px;
             border-radius: 30px;
-            font-size: 0.8rem;
-            color: #2c5a7a;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1e293b;
             cursor: pointer;
             transition: 0.2s;
             z-index: 100;
+            backdrop-filter: blur(4px);
         }
         .admin-btn:hover {
             background: #e2e8f0;
@@ -99,6 +101,40 @@
             outline: none;
             border-color: #2c7da0;
             box-shadow: 0 0 0 3px rgba(44,125,160,0.2);
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+        .checkbox-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        .subsystems-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            background: #f9f9ff;
+            padding: 1rem;
+            border-radius: 20px;
+            border: 1px solid #e0e7ff;
+        }
+        .subsystem-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+        .subsystem-item input {
+            width: auto;
+            margin-right: 4px;
         }
         button {
             background: #2c7da0;
@@ -234,7 +270,7 @@
         .modal-content {
             background: white;
             width: 90%;
-            max-width: 1000px;
+            max-width: 1100px;
             max-height: 90vh;
             border-radius: 28px;
             overflow: hidden;
@@ -252,6 +288,7 @@
         }
         .modal-header h3 {
             margin: 0;
+            font-size: 1.2rem;
         }
         .modal-close {
             background: none;
@@ -277,6 +314,7 @@
             border-radius: 20px;
             margin: 0;
             font-weight: 500;
+            font-size: 0.9rem;
             color: #475569;
         }
         .modal-tab.active {
@@ -295,17 +333,20 @@
         .admin-form-group label {
             font-weight: 600;
             margin-bottom: 0.3rem;
+            font-size: 0.9rem;
         }
         .admin-form-group input, .admin-form-group textarea, .admin-form-group select {
             width: 100%;
             padding: 0.5rem;
             border-radius: 12px;
             border: 1px solid #cbd5e1;
+            font-size: 0.9rem;
         }
         .admin-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 1rem;
+            font-size: 0.9rem;
         }
         .admin-table th, .admin-table td {
             border: 1px solid #e2e8f0;
@@ -324,17 +365,29 @@
         .btn-small {
             background: #e2e8f0;
             color: #1e293b;
-            padding: 0.2rem 0.6rem;
-            font-size: 0.7rem;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            font-weight: 500;
             margin: 0;
+            border-radius: 20px;
         }
         .btn-danger {
             background: #fecaca;
             color: #991b1b;
         }
+        .helper-text {
+            display: block;
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-top: 0.2rem;
+        }
         @media (max-width: 780px) {
             .card {
                 padding: 1.2rem;
+            }
+            .admin-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -395,7 +448,7 @@
     </div>
 
     <div class="card">
-        <h2>🔌 Подключаемые Подсистемы (плагины) </h2>
+        <h2>🔌 Подключаемые подсистемы и модули</h2>
         <div class="subsystems-list" id="subsystemsContainer"></div>
         <div class="note">
             💡 <strong>Правило:</strong> если подсистема требует больше ресурсов, чем Платформа — итоговые требования повышаются.<br>
@@ -432,11 +485,12 @@
                     <table class="result-table" id="clientLinuxTable">
                         <thead><tr><th>Параметр</th><th>Требования</th></tr></thead>
                         <tbody></tbody>
-                    <table>
+                    </table>
                 </div>
                 <div class="note">Клиентские требования не зависят от нагрузки и одинаковы для всех версий Платформы.<br>Для браузеров необходима поддержка JavaScript, cookies, всплывающих окон. Используйте последние стабильные версии.</div>
             </div>
         </div>
+        <!-- Эти блоки идут после .two-cols, на всю ширину -->
         <div id="warningsArea" style="margin-top: 1.5rem; background: #fff7e6; padding: 1rem; border-radius: 20px;"></div>
         <div id="subsystemsDetailsBlock" class="subsystems-details" style="display: none;">
             <div class="subsystems-details-header" id="subsystemsDetailsHeader">
@@ -469,14 +523,12 @@
             <button class="modal-tab" data-tab="subsystems">Подсистемы</button>
             <button class="modal-tab" data-tab="scaling">Масштабирование и запасы</button>
         </div>
-        <div class="modal-body" id="modalBody">
-            <!-- Динамическое содержимое вкладок -->
-        </div>
+        <div class="modal-body" id="modalBody"></div>
         <div class="modal-header" style="border-top: 1px solid #e2e8f0; justify-content: flex-end; gap: 0.5rem;">
-            <button id="exportConfigBtn" class="btn-small">Экспорт JSON</button>
-            <button id="importConfigBtn" class="btn-small">Импорт JSON</button>
-            <button id="resetConfigBtn" class="btn-small btn-danger">Сброс к заводским</button>
-            <button id="saveConfigBtn" class="btn-small" style="background:#2c7da0; color:white;">Сохранить</button>
+            <button id="exportConfigBtn" class="btn-small">📤 Экспорт JSON</button>
+            <button id="importConfigBtn" class="btn-small">📥 Импорт JSON</button>
+            <button id="resetConfigBtn" class="btn-small btn-danger">Вернуть исходные значения</button>
+            <button id="saveConfigBtn" class="btn-small" style="background:#2c7da0; color:white;">💾 Сохранить</button>
         </div>
     </div>
 </div>
@@ -550,17 +602,14 @@
             baseDocsMillion: 3,
             ramPerExtra3MillionGB: 4,
             referenceModeFactor: { ram_gb: 8, cpu_cores: 2, cpu_freq_ghz: 2.0 },
-            // Параметры запаса подсистем
             subsystemCountThreshold: 5,
             subsystemRamMultiplier: 1.15,
             subsystemDiskMultiplier: 1.10,
-            // Градации пользователей
             userTiers: [
                 { min: 301, max: 500, ramMultiplier: 1.2, extraCores: 2, targetFreq: null },
                 { min: 501, max: 1000, ramMultiplier: 1.5, extraCores: 4, targetFreq: 3.0 },
                 { min: 1001, max: null, ramMultiplier: 2.0, extraCores: 8, targetFreq: 3.5 }
             ],
-            // Формула диска
             diskFormula: {
                 ranges: [
                     { max: 3, coeff: 1.5, extra: 0 },
@@ -572,16 +621,13 @@
         }
     };
 
-    // Текущая конфигурация (загружается из localStorage или по умолчанию)
     let config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
 
-    // Загрузка сохранённой конфигурации
     function loadConfig() {
         const saved = localStorage.getItem('suntd_calculator_config');
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                // Глубокое слияние (простое, но для наших целей достаточно)
                 config = deepMerge(DEFAULT_CONFIG, parsed);
             } catch(e) { console.warn(e); }
         }
@@ -608,7 +654,6 @@
         location.reload();
     }
 
-    // Применяем конфиг к UI (заполняем select версий, рендерим подсистемы)
     function applyConfigToUI() {
         const platformSelect = document.getElementById('platformVersion');
         platformSelect.innerHTML = '';
@@ -619,10 +664,10 @@
             platformSelect.appendChild(option);
         }
         renderSubsystems();
-        // Пересчёт будет вызван отдельно
     }
 
-    // Функции рендеринга подсистем (используют config.subsystems)
+    let selectedSubsystems = new Set();
+
     function renderSubsystems() {
         const container = document.getElementById('subsystemsContainer');
         if (!container) return;
@@ -664,10 +709,6 @@
         return parts.join(', ');
     }
 
-    // Глобальные переменные для выбранных подсистем
-    let selectedSubsystems = new Set();
-
-    // Остальной код калькулятора (адаптированный под config)
     function aggregateServerReqs(baseReqs, selectedSubsList) {
         let result = { ...baseReqs };
         for (let subId of selectedSubsList) {
@@ -690,21 +731,19 @@
         for (let i = 0; i < ranges.length; i++) {
             const range = ranges[i];
             if (range.max === null) {
-                // последний диапазон
                 if (docsMillion > prevMax) {
-                    additional += (docsMillion - prevMax) * range.coeff + range.extra;
+                    additional += (docsMillion - prevMax) * range.coeff + (range.extra || 0);
                 }
                 break;
             } else {
                 if (docsMillion > prevMax) {
                     const part = Math.min(docsMillion, range.max) - prevMax;
-                    additional += part * range.coeff + (i === 0 ? 0 : range.extra); // extra только для последнего? в нашей структуре extra только у последнего, но для общности
+                    additional += part * range.coeff;
                     prevMax = range.max;
                 } else break;
             }
         }
-        // Для совместимости со старой логикой (где extra был только для >10)
-        // Уточним: в нашей структуре extra добавляется только в последнем диапазоне
+        // Добавляем extra для последнего диапазона (он уже учтён в блоке выше, но для первого и второго extra=0)
         let total = baseDiskGb + additional;
         return Math.ceil(total);
     }
@@ -833,7 +872,6 @@
         }
         let finalRamMin = serverReqs.ram_gb + extraRamByDocs;
 
-        // Коэффициент запаса подсистем
         let subsystemCount = selectedSubsArray.length;
         let subsystemRamMultiplier = 1.0;
         let subsystemDiskMultiplier = 1.0;
@@ -847,7 +885,6 @@
         diskMin = Math.ceil(diskMin * subsystemDiskMultiplier);
         const diskRecommended = diskMin + config.scaling.diskRecommendedPadding;
 
-        // Градации пользователей
         let userTier = null;
         let ramUserMultiplier = 1.0;
         let extraCores = 0;
@@ -976,7 +1013,7 @@
         navigator.clipboard.writeText(text).then(() => alert("Сводка скопирована в буфер обмена"));
     }
 
-    // Инициализация обработчиков
+    // Обработчики событий для основной страницы
     document.getElementById('calcBtn').addEventListener('click', calculateWithScroll);
     document.getElementById('exportBtn').addEventListener('click', exportSummary);
     document.getElementById('subsystemsDetailsHeader').addEventListener('click', toggleSubsystemsDetails);
@@ -984,17 +1021,16 @@
         renderSubsystems();
         calculateWithoutScroll();
     });
-    document.getElementById('deployMode').addEventListener('change', () => calculateWithoutScroll());
-    document.getElementById('userCount').addEventListener('input', () => calculateWithoutScroll());
-    document.getElementById('docCount').addEventListener('input', () => calculateWithoutScroll());
-    document.getElementById('virtualization').addEventListener('change', () => calculateWithoutScroll());
-    document.getElementById('serverOs').addEventListener('change', () => calculateWithoutScroll());
+    document.getElementById('deployMode').addEventListener('change', calculateWithoutScroll);
+    document.getElementById('userCount').addEventListener('input', calculateWithoutScroll);
+    document.getElementById('docCount').addEventListener('input', calculateWithoutScroll);
+    document.getElementById('virtualization').addEventListener('change', calculateWithoutScroll);
+    document.getElementById('serverOs').addEventListener('change', calculateWithoutScroll);
 
-    // Загрузка сохранённой конфигурации и старт
     loadConfig();
     setTimeout(() => calculateWithoutScroll(), 100);
 
-    // ------ Админ панель (модальное окно) ------
+    // ----- Административная панель -----
     const adminBtn = document.getElementById('adminBtn');
     const modal = document.getElementById('adminModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
@@ -1022,18 +1058,18 @@
 
     function renderPlatformTab() {
         let html = `<div class="admin-form-group"><button id="addPlatformBtn" class="btn-small">+ Добавить версию</button></div>`;
-        html += `<table class="admin-table"><thead><tr><th>Версия</th><th>CPU ядер</th><th>Частота (ГГц)</th><th>RAM (ГБ)</th><th>База диска (ГБ)</th><th>Сеть (Гбит)</th><th>Действия</th></tr></thead><tbody>`;
+        html += `<table class="admin-table"><thead><tr><th>Версия</th><th>CPU (ядер)</th><th>Частота (ГГц)</th><th>RAM (ГБ)</th><th>База диска (ГБ)</th><th>Сеть (Гбит/с)</th><th>Действия</th></tr></thead><tbody>`;
         for (let ver in config.platformReqs) {
             const p = config.platformReqs[ver];
             html += `<tr data-version="${ver}">
-                        <td>${ver}</td>
-                        <td><input type="number" step="1" class="edit-cpu-cores" value="${p.cpu_cores}"></td>
-                        <td><input type="number" step="0.1" class="edit-cpu-freq" value="${p.cpu_freq_ghz}"></td>
-                        <td><input type="number" step="1" class="edit-ram" value="${p.ram_gb}"></td>
-                        <td><input type="number" step="1" class="edit-disk-base" value="${p.disk_free_gb_base}"></td>
-                        <td><input type="number" step="0.1" class="edit-network" value="${p.network_gbit}"></td>
-                        <td><button class="btn-small copy-version" data-version="${ver}">Копировать</button> <button class="btn-small btn-danger delete-version" data-version="${ver}">Удалить</button></td>
-                     </tr>`;
+                         <td>${ver}</td>
+                         <td><input type="number" step="1" class="edit-cpu-cores" value="${p.cpu_cores}" style="width:70px"></td>
+                         <td><input type="number" step="0.1" class="edit-cpu-freq" value="${p.cpu_freq_ghz}" style="width:70px"></td>
+                         <td><input type="number" step="1" class="edit-ram" value="${p.ram_gb}" style="width:70px"></td>
+                         <td><input type="number" step="1" class="edit-disk-base" value="${p.disk_free_gb_base}" style="width:70px"></td>
+                         <td><input type="number" step="0.1" class="edit-network" value="${p.network_gbit}" style="width:70px"></td>
+                         <td><button class="btn-small copy-version" data-version="${ver}">Копировать</button> <button class="btn-small btn-danger delete-version" data-version="${ver}">Удалить</button></td>
+                      </tr>`;
         }
         html += `</tbody></table>`;
         return html;
@@ -1044,16 +1080,16 @@
         const lin = config.clientReqs.linux;
         return `
             <h4>Клиент Windows</h4>
-            <div class="admin-form-group"><label>CPU частота (ГГц)</label><input type="number" step="0.1" id="win_cpu_freq" value="${win.cpu_freq_ghz}"></div>
-            <div class="admin-form-group"><label>RAM (ГБ)</label><input type="number" step="1" id="win_ram" value="${win.ram_gb}"></div>
-            <div class="admin-form-group"><label>Сеть (Мбит/с)</label><input type="number" step="10" id="win_net" value="${win.network_mbps}"></div>
-            <div class="admin-form-group"><label>ОС</label><input type="text" id="win_os" value="${win.os}"></div>
-            <div class="admin-form-group"><label>Браузеры</label><input type="text" id="win_browsers" value="${win.browsers}"></div>
+            <div class="admin-form-group"><label>Частота CPU (ГГц)</label><input type="number" step="0.1" id="win_cpu_freq" value="${win.cpu_freq_ghz}"><span class="helper-text">Минимальная тактовая частота процессора на рабочей станции.</span></div>
+            <div class="admin-form-group"><label>Оперативная память (ГБ)</label><input type="number" step="1" id="win_ram" value="${win.ram_gb}"><span class="helper-text">Минимальный объём ОЗУ.</span></div>
+            <div class="admin-form-group"><label>Сетевой адаптер (Мбит/с)</label><input type="number" step="10" id="win_net" value="${win.network_mbps}"><span class="helper-text">Пропускная способность сети.</span></div>
+            <div class="admin-form-group"><label>Операционная система</label><input type="text" id="win_os" value="${win.os}"><span class="helper-text">Список поддерживаемых версий Windows.</span></div>
+            <div class="admin-form-group"><label>Браузеры</label><input type="text" id="win_browsers" value="${win.browsers}"><span class="helper-text">Перечень браузеров, с которыми гарантированно работает веб-клиент.</span></div>
             <h4>Клиент Linux</h4>
-            <div class="admin-form-group"><label>CPU частота (ГГц)</label><input type="number" step="0.1" id="lin_cpu_freq" value="${lin.cpu_freq_ghz}"></div>
-            <div class="admin-form-group"><label>RAM (ГБ)</label><input type="number" step="1" id="lin_ram" value="${lin.ram_gb}"></div>
-            <div class="admin-form-group"><label>Сеть (Мбит/с)</label><input type="number" step="10" id="lin_net" value="${lin.network_mbps}"></div>
-            <div class="admin-form-group"><label>ОС</label><input type="text" id="lin_os" value="${lin.os}"></div>
+            <div class="admin-form-group"><label>Частота CPU (ГГц)</label><input type="number" step="0.1" id="lin_cpu_freq" value="${lin.cpu_freq_ghz}"></div>
+            <div class="admin-form-group"><label>Оперативная память (ГБ)</label><input type="number" step="1" id="lin_ram" value="${lin.ram_gb}"></div>
+            <div class="admin-form-group"><label>Сетевой адаптер (Мбит/с)</label><input type="number" step="10" id="lin_net" value="${lin.network_mbps}"></div>
+            <div class="admin-form-group"><label>Операционная система</label><input type="text" id="lin_os" value="${lin.os}"></div>
             <div class="admin-form-group"><label>Браузеры</label><input type="text" id="lin_browsers" value="${lin.browsers}"></div>
         `;
     }
@@ -1064,9 +1100,9 @@
         config.subsystems.forEach((sub, idx) => {
             html += `<div class="admin-form-group" data-subsys-index="${idx}" style="border:1px solid #e2e8f0; padding:0.8rem; margin-bottom:0.8rem; border-radius:16px;">
                         <strong>${sub.name}</strong>
-                        <div><label>ID</label><input type="text" class="subsys-id" value="${sub.id}"></div>
+                        <div><label>ID (уникальный)</label><input type="text" class="subsys-id" value="${sub.id}"></div>
                         <div><label>Название</label><input type="text" class="subsys-name" value="${sub.name}"></div>
-                        <div><label>Требования (RAM, CPU ядра, CPU частота)</label><input type="text" class="subsys-reqs" value="${sub.requirements.server.ram_gb}, ${sub.requirements.server.cpu_cores}, ${sub.requirements.server.cpu_freq_ghz}"></div>
+                        <div><label>Требования (RAM, CPU ядра, CPU частота)</label><input type="text" class="subsys-reqs" value="${sub.requirements.server.ram_gb}, ${sub.requirements.server.cpu_cores}, ${sub.requirements.server.cpu_freq_ghz}"><span class="helper-text">Формат: число, число, число (например: 16, 4, 2.7)</span></div>
                         <div><label>extraWarnings (каждая с новой строки)</label><textarea class="subsys-warnings" rows="3">${sub.extraWarnings.join('\n')}</textarea></div>
                         <button class="btn-small btn-danger delete-subsystem" data-idx="${idx}">Удалить</button>
                     </div>`;
@@ -1080,37 +1116,40 @@
         const tiers = s.userTiers;
         const ranges = s.diskFormula.ranges;
         return `
-            <h4>Масштабирование по документам</h4>
-            <div class="admin-form-group"><label>baseDocsMillion</label><input type="number" id="baseDocs" value="${s.baseDocsMillion}"></div>
-            <div class="admin-form-group"><label>ramPerExtra3MillionGB</label><input type="number" id="ramPerExtra" value="${s.ramPerExtra3MillionGB}"></div>
-            <h4>Коэффициент запаса подсистем</h4>
-            <div class="admin-form-group"><label>Порог количества подсистем</label><input type="number" id="subsysThresh" value="${s.subsystemCountThreshold}"></div>
-            <div class="admin-form-group"><label>Множитель RAM</label><input type="number" step="0.01" id="subsysRamMult" value="${s.subsystemRamMultiplier}"></div>
-            <div class="admin-form-group"><label>Множитель диска</label><input type="number" step="0.01" id="subsysDiskMult" value="${s.subsystemDiskMultiplier}"></div>
-            <h4>Градации пользователей</h4>
+            <h4>Масштабирование оперативной памяти по документам</h4>
+            <div class="admin-form-group"><label>Базовый объём документов (млн)</label><input type="number" id="baseDocs" value="${s.baseDocsMillion}"><span class="helper-text">До этого количества документов не добавляется ОЗУ. Пример: 3</span></div>
+            <div class="admin-form-group"><label>Добавка RAM на каждые 3 млн документов (ГБ)</label><input type="number" id="ramPerExtra" value="${s.ramPerExtra3MillionGB}"><span class="helper-text">Сколько гигабайт ОЗУ добавлять за каждые 3 млн документов сверх базового. Пример: 4</span></div>
+            
+            <h4>Коэффициент запаса при большом количестве подсистем</h4>
+            <div class="admin-form-group"><label>Порог количества подсистем</label><input type="number" id="subsysThresh" value="${s.subsystemCountThreshold}"><span class="helper-text">Если выбрано столько или больше подсистем, применяется запас. Пример: 5</span></div>
+            <div class="admin-form-group"><label>Множитель RAM</label><input type="number" step="0.01" id="subsysRamMult" value="${s.subsystemRamMultiplier}"><span class="helper-text">Например, 1.15 означает увеличение на 15%</span></div>
+            <div class="admin-form-group"><label>Множитель диска</label><input type="number" step="0.01" id="subsysDiskMult" value="${s.subsystemDiskMultiplier}"><span class="helper-text">Например, 1.10 означает увеличение на 10%</span></div>
+            
+            <h4>Градации нагрузки по пользователям</h4>
             <div id="tiersContainer">
                 ${tiers.map((t, i) => `<div style="border:1px solid #e2e8f0; padding:0.5rem; margin-bottom:0.5rem;">
                     <label>Диапазон: от ${t.min} до ${t.max === null ? '∞' : t.max}</label>
-                    <div><label>Множитель RAM</label><input type="number" step="0.1" class="tier-ram-mult" value="${t.ramMultiplier}"></div>
-                    <div><label>Добавляемых ядер</label><input type="number" class="tier-cores" value="${t.extraCores}"></div>
-                    <div><label>Целевая частота (ГГц, опционально)</label><input type="number" step="0.1" class="tier-freq" value="${t.targetFreq === null ? '' : t.targetFreq}"></div>
+                    <div><label>Множитель RAM</label><input type="number" step="0.1" class="tier-ram-mult" value="${t.ramMultiplier}"><span class="helper-text">На сколько умножить ОЗУ (например, 1.5 = +50%)</span></div>
+                    <div><label>Добавляемых ядер CPU</label><input type="number" class="tier-cores" value="${t.extraCores}"></div>
+                    <div><label>Целевая частота (ГГц, опционально)</label><input type="number" step="0.1" class="tier-freq" value="${t.targetFreq === null ? '' : t.targetFreq}"><span class="helper-text">Оставьте пустым, если не повышать.</span></div>
                     <button class="btn-small btn-danger remove-tier" data-tier="${i}">Удалить диапазон</button>
                 </div>`).join('')}
             </div>
             <button id="addTierBtn" class="btn-small">+ Добавить диапазон</button>
-            <h4>Формула диска</h4>
+            
+            <h4>Формула дискового пространства (нелинейная)</h4>
             <div id="diskRangesContainer">
                 ${ranges.map((r, i) => `<div style="border:1px solid #e2e8f0; padding:0.5rem; margin-bottom:0.5rem;">
-                    <label>Макс. млн (пусто = ∞)</label><input type="number" class="range-max" value="${r.max === null ? '' : r.max}">
-                    <label>Коэффициент</label><input type="number" step="0.1" class="range-coeff" value="${r.coeff}">
+                    <label>Макс. млн документов (пусто = ∞)</label><input type="number" class="range-max" value="${r.max === null ? '' : r.max}">
+                    <label>Коэффициент (ГБ на млн)</label><input type="number" step="0.1" class="range-coeff" value="${r.coeff}">
                     <label>Доп. запас (ГБ)</label><input type="number" class="range-extra" value="${r.extra}">
                     <button class="btn-small btn-danger remove-range" data-range="${i}">Удалить диапазон</button>
                 </div>`).join('')}
             </div>
             <button id="addRangeBtn" class="btn-small">+ Добавить диапазон</button>
-            <h4>Рекомендуемый диск</h4>
-            <div class="admin-form-group"><label>Добавка к минимальному (ГБ)</label><input type="number" id="diskPadding" value="${s.diskRecommendedPadding}"></div>
-            <h4>Режим "Только справочная система"</h4>
+            <div class="admin-form-group"><label>Рекомендуемый диск: добавка к минимальному (ГБ)</label><input type="number" id="diskPadding" value="${s.diskRecommendedPadding}"><span class="helper-text">Например, 30 ГБ запаса сверх минимального.</span></div>
+            
+            <h4>Режим «Только Справочная система»</h4>
             <div class="admin-form-group"><label>RAM (ГБ)</label><input type="number" id="refRam" value="${s.referenceModeFactor.ram_gb}"></div>
             <div class="admin-form-group"><label>CPU ядер</label><input type="number" id="refCores" value="${s.referenceModeFactor.cpu_cores}"></div>
             <div class="admin-form-group"><label>CPU частота (ГГц)</label><input type="number" step="0.1" id="refFreq" value="${s.referenceModeFactor.cpu_freq_ghz}"></div>
@@ -1118,7 +1157,6 @@
     }
 
     function attachAdminEventListeners() {
-        // Версии платформы
         document.querySelectorAll('.copy-version').forEach(btn => {
             btn.onclick = () => {
                 const ver = btn.dataset.version;
@@ -1146,12 +1184,8 @@
                 renderAdminPanel();
             }
         };
-        // Клиентские требования
-        const winFields = ['win_cpu_freq','win_ram','win_net','win_os','win_browsers'];
-        const linFields = ['lin_cpu_freq','lin_ram','lin_net','lin_os','lin_browsers'];
-        // Подсистемы
-        const addSubsysBtn = document.getElementById('addSubsystemBtn');
-        if (addSubsysBtn) addSubsysBtn.onclick = () => {
+        const addSubsystemBtn = document.getElementById('addSubsystemBtn');
+        if (addSubsystemBtn) addSubsystemBtn.onclick = () => {
             const newId = prompt('Введите ID подсистемы (уникальный)');
             if (newId && !config.subsystems.find(s => s.id === newId)) {
                 config.subsystems.push({
@@ -1172,13 +1206,12 @@
                 }
             };
         });
-        // Масштабирование: сохраним обработчики позже через общий save
+        // Для масштабирования – добавление/удаление диапазонов и сохранение через общий save
     }
 
     function collectAdminData() {
-        // Сбор данных из активной вкладки (упрощённо, для сохранения сохраним все изменения через поля)
-        // Так как данные могут быть разбросаны, мы будем при сохранении считывать все поля напрямую из DOM
-        // Для платформ
+        // Сохраняем изменения из вкладок, которые есть на экране
+        // Платформы
         const versionRows = document.querySelectorAll('#modalBody table tbody tr');
         if (versionRows.length) {
             versionRows.forEach(row => {
@@ -1192,7 +1225,7 @@
                 }
             });
         }
-        // Клиентские требования
+        // Клиентские
         if (document.getElementById('win_cpu_freq')) {
             config.clientReqs.windows = {
                 cpu_freq_ghz: parseFloat(document.getElementById('win_cpu_freq').value),
@@ -1242,9 +1275,8 @@
                 const ramMult = parseFloat(div.querySelector('.tier-ram-mult').value);
                 const cores = parseInt(div.querySelector('.tier-cores').value);
                 const freq = parseFloat(div.querySelector('.tier-freq').value) || null;
-                // Min и max берём из заголовка (можно вынести в поля, но для простоты оставим как есть)
-                // Мы не можем динамически менять границы в этом интерфейсе, поэтому пропустим. Добавим позже.
-                // В демо версии оставим старые границы.
+                // Границы не редактируются в этом интерфейсе, оставляем старые или можно добавить поля – для простоты оставим как есть
+                // В демо версии используем текущие границы, которые были при загрузке. При добавлении нового диапазона границы нужно задавать.
             });
             // Дисковые диапазоны
             const rangeDivs = document.querySelectorAll('#diskRangesContainer > div');
@@ -1271,7 +1303,7 @@
         saveConfig();
     };
     document.getElementById('resetConfigBtn').onclick = () => {
-        if (confirm('Сбросить все настройки к заводским?')) {
+        if (confirm('Вернуть все исходные значения? Все сделанные изменения будут потеряны.')) {
             localStorage.removeItem('suntd_calculator_config');
             location.reload();
         }

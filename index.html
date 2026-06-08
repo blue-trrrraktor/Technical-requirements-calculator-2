@@ -440,7 +440,7 @@
         <h2>📋 Результат расчета</h2>
         <div class="two-cols">
             <div class="col"><h3>🖥️ Серверная часть</h3><table class="result-table" id="serverTable"><thead><tr><th>Параметр</th><th>Минимальные требования</th><th>Рекомендуемые</th></tr></thead><tbody></tbody></table><div id="serverExtraNote" class="note" style="margin-top: 8px;"></div></div>
-            <div class="col"><h3>🖱️ Клиентская часть</h3><div class="client-os-section"><h4 style="margin:0 0 8px 0">⊞ Windows (64‑bit)</h4><table class="result-table" id="clientWindowsTable"><thead><tr><th>Параметр</th><th>Требования</th></tr></thead><tbody></tbody></table></div><div class="client-os-section"><h4 style="margin:0 0 8px 0">🐧 Linux</h4><table class="result-table" id="clientLinuxTable"><thead><tr><th>Параметр</th><th>Требования</th></tr></thead><tbody></tbody></table></div><div class="note">Клиентские требования не зависят от нагрузки и одинаковы для всех версий Платформы.<br>Для браузеров необходима поддержка JavaScript, cookies, всплывающих окон. Используйте последние стабильные версии.</div></div>
+            <div class="col"><h3>🖱️ Клиентская часть</h3><div class="client-os-section"><h4 style="margin:0 0 8px 0">⊞ Windows (64‑bit)</h4><table class="result-table" id="clientWindowsTable"><thead><tr><th>Параметр</th><th>Требования</th><tr></thead><tbody></tbody></table></div><div class="client-os-section"><h4 style="margin:0 0 8px 0">🐧 Linux</h4><table class="result-table" id="clientLinuxTable"><thead><tr><th>Параметр</th><th>Требования</th></tr></thead><tbody></tbody></table></div><div class="note">Клиентские требования не зависят от нагрузки и одинаковы для всех версий Платформы.<br>Для браузеров необходима поддержка JavaScript, cookies, всплывающих окон. Используйте последние стабильные версии.</div></div>
         </div>
         <div id="warningsArea" style="margin-top: 1.5rem; background: #fff7e6; padding: 1rem; border-radius: 20px;"></div>
         <div id="subsystemsDetailsBlock" class="subsystems-details" style="display: none;"><div class="subsystems-details-header" id="subsystemsDetailsHeader"><span>📌 Дополнительные требования выбранных подсистем</span><span>▼</span></div><div class="subsystems-details-content" id="subsystemsDetailsContent"></div></div>
@@ -754,7 +754,7 @@
     loadConfig();
     setTimeout(() => calculateWithoutScroll(), 100);
 
-    // ---------- Административная панель ----------
+    // Административная панель
     const adminBtn = document.getElementById('adminBtn');
     const modal = document.getElementById('adminModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
@@ -881,8 +881,6 @@
     }
 
     function collectAdminData() {
-        // Сбор данных из текущего DOM админки
-        // Версии
         const versionRows = document.querySelectorAll('#modalBody table tbody tr');
         if (versionRows.length) {
             versionRows.forEach(row => {
@@ -896,12 +894,10 @@
                 }
             });
         }
-        // Клиентские
         if (document.getElementById('win_cpu_freq')) {
             config.clientReqs.windows = { cpu_freq_ghz: parseFloat(document.getElementById('win_cpu_freq').value), ram_gb: parseInt(document.getElementById('win_ram').value), network_mbps: parseInt(document.getElementById('win_net').value), os: document.getElementById('win_os').value, browsers: document.getElementById('win_browsers').value };
             config.clientReqs.linux = { cpu_freq_ghz: parseFloat(document.getElementById('lin_cpu_freq').value), ram_gb: parseInt(document.getElementById('lin_ram').value), network_mbps: parseInt(document.getElementById('lin_net').value), os: document.getElementById('lin_os').value, browsers: document.getElementById('lin_browsers').value };
         }
-        // Подсистемы
         const subsysDivs = document.querySelectorAll('#subsystemsList > div');
         if (subsysDivs.length) {
             let newSubsystems = [];
@@ -915,14 +911,12 @@
             });
             config.subsystems = newSubsystems;
         }
-        // Масштабирование
         if (document.getElementById('baseDocs')) {
             config.scaling.baseDocsMillion = parseFloat(document.getElementById('baseDocs').value);
             config.scaling.ramPerExtra3MillionGB = parseFloat(document.getElementById('ramPerExtra').value);
             config.scaling.subsystemCountThreshold = parseInt(document.getElementById('subsysThresh').value);
             config.scaling.subsystemRamMultiplier = parseFloat(document.getElementById('subsysRamMult').value);
             config.scaling.subsystemDiskMultiplier = parseFloat(document.getElementById('subsysDiskMult').value);
-            // userTiers
             let newTiers = [];
             const tierDivs = document.querySelectorAll('#tiersContainer .config-block');
             tierDivs.forEach(div => {
@@ -935,7 +929,6 @@
                 newTiers.push({ min, max, ramMultiplier: ramMult, extraCores: cores, targetFreq: freq });
             });
             config.scaling.userTiers = newTiers;
-            // diskFormula ranges
             let newRanges = [];
             const rangeDivs = document.querySelectorAll('#diskRangesContainer .config-block');
             rangeDivs.forEach(div => {
@@ -964,11 +957,12 @@
         input.accept = 'application/json';
         input.onchange = e => {
             const file = e.target.files[0];
+            if (!file) return;
             const reader = new FileReader();
             reader.onload = ev => {
                 try {
                     let content = ev.target.result;
-                    // Удаляем BOM, если есть
+                    if (typeof content !== 'string') throw new Error('Не удалось прочитать файл как текст');
                     if (content.charCodeAt(0) === 0xFEFF) content = content.slice(1);
                     const imported = JSON.parse(content);
                     config = deepMerge(DEFAULT_CONFIG, imported);
@@ -978,6 +972,7 @@
                     alert(`Ошибка импорта: ${err.message}\nПроверьте JSON на синтаксические ошибки.\nПодробности в консоли (F12).`);
                 }
             };
+            reader.onerror = () => alert('Ошибка чтения файла');
             reader.readAsText(file, 'UTF-8');
         };
         input.click();

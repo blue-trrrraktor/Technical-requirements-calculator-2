@@ -1,1 +1,1318 @@
-html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Калькулятор технических требований СУНТД</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 24px 20px;
+            color: #1e293b;
+            position: relative;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem 0;
+            color: #0f3b5c;
+        }
+        .sub {
+            color: #2c5a7a;
+            margin-bottom: 2rem;
+            border-left: 4px solid #2c7da0;
+            padding-left: 1rem;
+            font-weight: 400;
+        }
+        .admin-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            color: #2c5a7a;
+            cursor: pointer;
+            transition: 0.2s;
+            z-index: 100;
+        }
+        .admin-btn:hover {
+            background: #e2e8f0;
+            border-color: #2c7da0;
+        }
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.2s;
+        }
+        .card h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.6rem;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        .input-group {
+            flex: 1;
+            min-width: 220px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.4rem;
+            color: #0c4e6e;
+        }
+        select, input, .checkbox-group {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border-radius: 14px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44,125,160,0.2);
+        }
+        button {
+            background: #2c7da0;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            margin-top: 0.5rem;
+        }
+        button:hover {
+            background: #1f5e7a;
+            transform: translateY(-1px);
+        }
+        .result-section {
+            background: #fefce8;
+            border-left: 6px solid #eab308;
+        }
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        .result-table th, .result-table td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        .result-table th {
+            background: #f1f5f9;
+            font-weight: 700;
+            width: 30%;
+        }
+        .warning-list {
+            margin: 1rem 0 0 0;
+            padding-left: 1.2rem;
+        }
+        .warning-list li {
+            margin: 0.5rem 0;
+            color: #9b2c1d;
+        }
+        .two-cols {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .col {
+            flex: 1;
+            min-width: 280px;
+        }
+        .note {
+            font-size: 0.8rem;
+            color: #475569;
+            background: #f1f5f9;
+            padding: 0.8rem;
+            border-radius: 16px;
+            margin-top: 1rem;
+        }
+        .client-os-section {
+            margin-bottom: 1rem;
+            border-radius: 16px;
+            background: #ffffffcc;
+            padding: 0.5rem 0;
+        }
+        .subsystems-details {
+            margin-top: 1.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            background: #ffffff;
+            overflow: hidden;
+        }
+        .subsystems-details-header {
+            background: #f1f5f9;
+            padding: 0.8rem 1.2rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        .subsystems-details-header:hover {
+            background: #e2e8f0;
+        }
+        .subsystems-details-content {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            display: none;
+        }
+        .subsystems-details-content.show {
+            display: block;
+        }
+        .subsystem-detail-group {
+            margin-bottom: 1.2rem;
+        }
+        .subsystem-detail-group strong {
+            display: block;
+            margin-bottom: 0.3rem;
+            color: #0c4e6e;
+        }
+        .subsystem-detail-group ul {
+            margin: 0.2rem 0 0 1.2rem;
+            padding-left: 0;
+        }
+        .subsystem-detail-group li {
+            margin: 0.2rem 0;
+            color: #475569;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #5b6e8c;
+        }
+        /* Модальное окно администратора */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            border-radius: 28px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin: 0;
+            padding: 0;
+            line-height: 1;
+        }
+        .modal-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem 1.5rem;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .modal-tab {
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 20px;
+            margin: 0;
+            font-weight: 500;
+            color: #475569;
+        }
+        .modal-tab.active {
+            background: white;
+            color: #0f3b5c;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .admin-form-group {
+            margin-bottom: 1.2rem;
+        }
+        .admin-form-group label {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        .admin-form-group input, .admin-form-group textarea, .admin-form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        .admin-table th, .admin-table td {
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        .admin-table th {
+            background: #f1f5f9;
+        }
+        .inline-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .btn-small {
+            background: #e2e8f0;
+            color: #1e293b;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.7rem;
+            margin: 0;
+        }
+        .btn-danger {
+            background: #fecaca;
+            color: #991b1b;
+        }
+        @media (max-width: 780px) {
+            .card {
+                padding: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📐 Калькулятор технических требований</h1>
+    <div class="sub">СУ НТД · Учет нагрузки по документам и пользователям</div>
+
+    <div class="card">
+        <h2>⚙️ Конфигурация системы</h2>
+        <div class="flex-row">
+            <div class="input-group">
+                <label>📦 Версия Платформы</label>
+                <select id="platformVersion"></select>
+            </div>
+            <div class="input-group">
+                <label>🖥️ Режим развертывания</label>
+                <select id="deployMode">
+                    <option value="full">Полный контур СУ НТД (типовой)</option>
+                    <option value="reference">Только Справочная система (облегченный)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>🧑‍ Количество одновременных пользователей</label>
+                <input type="number" id="userCount" value="150" step="1" min="1">
+            </div>
+            <div class="input-group">
+                <label>📄 Объем документов в БД (млн)</label>
+                <input type="number" id="docCount" value="2.5" step="0.5" min="0">
+            </div>
+        </div>
+        <div class="flex-row" style="margin-top: 1rem;">
+            <div class="input-group">
+                <label>🖧 Среда выполнения сервера</label>
+                <select id="virtualization">
+                    <option value="physical">Физический сервер</option>
+                    <option value="virtual">Виртуальный сервер (VMware, Hyper-V, KVM)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>💻 ОС сервера </label>
+                <select id="serverOs">
+                    <option value="win2012">Windows Server 2012</option>
+                    <option value="win2016">Windows Server 2016</option>
+                    <option value="win2019">Windows Server 2019</option>
+                    <option value="win2022">Windows Server 2022</option>
+                    <option value="win2025">Windows Server 2025</option>
+                    <option value="linux_astra">Astra Linux (Special/Common Edition)</option>
+                    <option value="linux_alt">Альт Сервер / Альт СП Сервер</option>
+                    <option value="linux_red">РЕД ОС</option>
+                    <option value="linux_atlant">ОС Атлант (Alcyone)</option>
+                    <option value="linux_other">Linux (ядро 3.0+) — прочие</option>
+                    <option value="other">Другая (не рекомендуется)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🔌 Подключаемые Подсистемы (плагины) </h2>
+        <div class="subsystems-list" id="subsystemsContainer"></div>
+        <div class="note">
+            💡 <strong>Правило:</strong> если подсистема требует больше ресурсов, чем Платформа — итоговые требования повышаются.<br>
+            📋 <strong>Детали:</strong> специфические требования выбранных подсистем отображаются в отдельном сворачиваемом блоке после расчета.
+        </div>
+    </div>
+
+    <div style="text-align: right;">
+        <button id="calcBtn">🧮 Рассчитать требования →</button>
+    </div>
+
+    <div class="card result-section" id="resultPanel" style="display: none;">
+        <h2>📋 Результат расчета</h2>
+        <div class="two-cols">
+            <div class="col">
+                <h3>🖥️ Серверная часть</h3>
+                <table class="result-table" id="serverTable">
+                    <thead><tr><th>Параметр</th><th>Минимальные требования</th><th>Рекомендуемые</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+                <div id="serverExtraNote" class="note" style="margin-top: 8px;"></div>
+            </div>
+            <div class="col">
+                <h3>🖱️ Клиентская часть</h3>
+                <div class="client-os-section">
+                    <h4 style="margin:0 0 8px 0">⊞ Windows (64‑bit)</h4>
+                    <table class="result-table" id="clientWindowsTable">
+                        <thead><tr><th>Параметр</th><th>Требования</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="client-os-section">
+                    <h4 style="margin:0 0 8px 0">🐧 Linux</h4>
+                    <table class="result-table" id="clientLinuxTable">
+                        <thead><tr><th>Параметр</th><th>Требования</th></tr></thead>
+                        <tbody></tbody>
+                    <table>
+                </div>
+                <div class="note">Клиентские требования не зависят от нагрузки и одинаковы для всех версий Платформы.<br>Для браузеров необходима поддержка JavaScript, cookies, всплывающих окон. Используйте последние стабильные версии.</div>
+            </div>
+        </div>
+        <div id="warningsArea" style="margin-top: 1.5rem; background: #fff7e6; padding: 1rem; border-radius: 20px;"></div>
+        <div id="subsystemsDetailsBlock" class="subsystems-details" style="display: none;">
+            <div class="subsystems-details-header" id="subsystemsDetailsHeader">
+                <span>📌 Дополнительные требования выбранных подсистем</span>
+                <span>▼</span>
+            </div>
+            <div class="subsystems-details-content" id="subsystemsDetailsContent"></div>
+        </div>
+        <div id="scalingNote" class="note"></div>
+        <button id="exportBtn" style="background: #4b5563; margin-top: 1rem;">📎 Копировать сводку</button>
+    </div>
+    <footer>
+        ⚡ Калькулятор основан на утвержденных технических требованиях к Платформе, подсистемам и правилам масштабирования.<br>
+        При виртуализации строго соблюдать настройки энергопотребления (BIOS/хоста/гостя) и размещать тома БД на локальном виртуальном диске (не по сети).
+    </footer>
+</div>
+
+<button class="admin-btn" id="adminBtn">⚙️ Настройка ограничений нагрузки</button>
+
+<!-- Модальное окно администрирования -->
+<div id="adminModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Административная панель</h3>
+            <button class="modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="modal-tabs" id="modalTabs">
+            <button class="modal-tab active" data-tab="platform">Версии Платформы</button>
+            <button class="modal-tab" data-tab="client">Клиентские требования</button>
+            <button class="modal-tab" data-tab="subsystems">Подсистемы</button>
+            <button class="modal-tab" data-tab="scaling">Масштабирование и запасы</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- Динамическое содержимое вкладок -->
+        </div>
+        <div class="modal-header" style="border-top: 1px solid #e2e8f0; justify-content: flex-end; gap: 0.5rem;">
+            <button id="exportConfigBtn" class="btn-small">Экспорт JSON</button>
+            <button id="importConfigBtn" class="btn-small">Импорт JSON</button>
+            <button id="resetConfigBtn" class="btn-small btn-danger">Сброс к заводским</button>
+            <button id="saveConfigBtn" class="btn-small" style="background:#2c7da0; color:white;">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- КОНФИГУРАЦИЯ ПО УМОЛЧАНИЮ ----------
+    const DEFAULT_CONFIG = {
+        platformReqs: {
+            "6.4.5": {
+                cpu_cores: 4,
+                cpu_freq_ghz: 2.7,
+                ram_gb: 16,
+                disk_free_gb_base: 50,
+                network_gbit: 1,
+                bios_power_setting: true,
+                os_windows: ["Server 2012","Server 2016","Server 2019","Server 2022","Server 2025"],
+                os_linux_compatible: [
+                    "Astra Linux Special Edition 1.6+","Astra Linux Common Edition 2.12+",
+                    "Альт СП Сервер 10+","Альт Сервер 10+","РЕД ОС 7.3+","ОС Атлант сборка Alcyone",
+                    "AlterOS 7.5+","ядро 3.0+ (прочие дистрибутивы)"
+                ],
+                power_plan_recommended: "Высокая производительность"
+            },
+            "6.4.6": {
+                cpu_cores: 4,
+                cpu_freq_ghz: 2.7,
+                ram_gb: 16,
+                disk_free_gb_base: 50,
+                network_gbit: 1,
+                bios_power_setting: true,
+                os_windows: ["Server 2012","Server 2016","Server 2019","Server 2022","Server 2025"],
+                os_linux_compatible: [
+                    "Astra Linux Special Edition 1.6+","Astra Linux Common Edition 2.12+",
+                    "Альт СП Сервер 10+","Альт Сервер 10+","РЕД ОС 7.3+","ОС Атлант сборка Alcyone",
+                    "AlterOS 7.5+","ядро 3.0+ (прочие дистрибутивы)"
+                ],
+                power_plan_recommended: "Высокая производительность"
+            }
+        },
+        clientReqs: {
+            windows: {
+                cpu_freq_ghz: 2.0,
+                ram_gb: 4,
+                network_mbps: 100,
+                os: "Windows 7, 8, 8.1, 10, 11 и выше (только 64-bit)",
+                browsers: "Google Chrome, Mozilla Firefox, Microsoft Edge, Opera, Яндекс.Браузер (последние стабильные версии)"
+            },
+            linux: {
+                cpu_freq_ghz: 2.0,
+                ram_gb: 4,
+                network_mbps: 100,
+                os: "Astra Linux Desktop 1.7+, Alt Linux Desktop 10.4+, РЕД ОС 7.3+, Ubuntu Desktop 22.04+",
+                browsers: "Google Chrome, Mozilla Firefox, Microsoft Edge, Opera, Яндекс.Браузер (последние стабильные версии)"
+            }
+        },
+        subsystems: [
+            { id: "bank_docs", name: "Техэксперт: Банк документов", requirements: { server: { ram_gb: 16, cpu_cores: 4, cpu_freq_ghz: 2.7 } }, extraWarnings: ["Большие установки: Банк документов с операторскими местами — отдельный сервер, данные синхронизируются с СХД.", "Способы авторизации: по базе пользователей, по домену (Kerberos). Для Linux только база и Kerberos.", "АРМ администратора фондов работает только под Windows."] },
+            { id: "arm_operator", name: "Техэксперт: АРМ оператора фондов", requirements: { server: { ram_gb: 16, cpu_cores: 4, cpu_freq_ghz: 2.7 } }, extraWarnings: ["Рекомендуется отдельный сервер Банка документов, единый для всех установок ПВФ.", "Работа в нескольких кодвебах не поддерживается.", "Клиентское приложение «Техэксперт-клиент» не используется — только web."] },
+            { id: "control_nd", name: "Техэксперт: Контроль оборота НД", requirements: { server: { ram_gb: 16, cpu_cores: 4, cpu_freq_ghz: 2.7 } }, extraWarnings: ["Подсистемы на нескольких кодвебах можно подключить к единой СУБД PostgreSQL.", "Рекомендуемое разрешение экрана клиента: не менее 1024x768."] },
+            { id: "digital_cabinets", name: "Техэксперт: Цифровые кабинеты", requirements: { server: { ram_gb: 16, cpu_cores: 4, cpu_freq_ghz: 2.7 } }, extraWarnings: ["Одинаковые файлы настроек можно использовать на нескольких кодвебах.", "Клиент — только web, разрешение экрана ≥1024x768."] },
+            { id: "constructor_nd", name: "Техэксперт: Конструктор нормативных документов", requirements: { server: { ram_gb: 16, cpu_cores: 4, cpu_freq_ghz: 2.7 } }, extraWarnings: ["Требуется СУБД MongoDB версии 4.0 и выше.", "На рабочих местах: Microsoft Office 2010 SP2+ (или Мой офис), .NET Framework 4.5.2, Visual Studio Tools for Office Runtime."] },
+            { id: "discussion_nd", name: "Техэксперт: Обсуждение нормативных документов", requirements: { server: { ram_gb: 16, cpu_cores: 4, cpu_freq_ghz: 2.7 } }, extraWarnings: ["Требуется PostgreSQL 9.1+, PHP ≤5.6, Apache 2.2+.", "С нескольких кодвебов подключение к одной подсистеме по единой ссылке."] },
+            { id: "monitoring_te", name: "Техэксперт: Мониторинг системы", requirements: { server: { ram_gb: 16, cpu_cores: 4, cpu_freq_ghz: 2.7 } }, extraWarnings: ["Использует СУБД Sqlite (встроенная) и Postgres (требуется дополнительная установка)."] },
+            { id: "planning_nd", name: "Техэксперт: Планирование разработки НД", requirements: { server: { ram_gb: 16, cpu_cores: 4, cpu_freq_ghz: 2.7 } }, extraWarnings: ["Требует PostgreSQL 10, SQLite 3.38.0.", "На клиенте: Microsoft Office 2010+, Adobe Reader 10+, .NET Framework 4.6.1."] },
+            { id: "kassist3", name: "Интеграционный модуль 'кАссист' (3-е поколение)", requirements: { server: { ram_gb: 16, cpu_cores: 4, cpu_freq_ghz: 2.7 } }, extraWarnings: ["Требуется Платформа 6.4.5 или выше.", "Авторизация: ключ доступа или по логину Windows.", "Для сервиса Пакетная обработка файлов: .NET Framework 4.7, Microsoft Office Word/Excel 2007+.", "Для сервиса Информер: .NET Framework 4.5.", "Клиент поддерживает Windows, браузеры и 'Кодекс-клиент'."] },
+            { id: "kassist4", name: "Интеграционный модуль 'кАссист' (4-е поколение)", requirements: { server: { ram_gb: 16, cpu_cores: 4, cpu_freq_ghz: 2.7 } }, extraWarnings: ["Требуется Платформа 6.4.5+.", "Клиент только Linux (Astra, Alt, РЕД ОС, Ubuntu).", "Интеграция с LibreOffice x64 5.1+, Р7-Офис 2024.1.2.401+ (только Редактор текста).", "Отсутствует: авторазвертывание, сервис 'Информер', сервис 'кАссист:Пакетный'."] },
+            { id: "nsi", name: "Техэксперт: Подсистема управления нормативно-справочной информацией", requirements: { server: { ram_gb: 16, cpu_cores: 4, cpu_freq_ghz: 2.7 } }, extraWarnings: ["Клиент только Linux (Astra, Alt, РЕД ОС, Ubuntu).", "Работа только через web-браузер."] },
+            { id: "soglasovanie", name: "Техэксперт: Согласование НД", requirements: { server: { ram_gb: 32, cpu_cores: 8, cpu_freq_ghz: 2.7 } }, extraWarnings: ["Сервер приложений: 8 ГБ ОЗУ, СУБД: 32 ГБ ОЗУ (итоговое требование 32 ГБ, 8 ядер).", "Сетевые требования: для сервера приложений 100 ГБ (диск) / для СУБД 500 ГБ RAID1 — требуется значительное дисковое пространство.", "Работает только на Windows Server 2012+ (серверная часть).", "Для подписания ЭП: КриптоПро CSP v4+, плагин КриптоПро ЭЦП Browser plug-in.", "Веб-сервер IIS обязателен для Windows.", "Клиент поддерживает Windows, Linux, браузеры на Chromium."] }
+        ],
+        scaling: {
+            baseDocsMillion: 3,
+            ramPerExtra3MillionGB: 4,
+            referenceModeFactor: { ram_gb: 8, cpu_cores: 2, cpu_freq_ghz: 2.0 },
+            // Параметры запаса подсистем
+            subsystemCountThreshold: 5,
+            subsystemRamMultiplier: 1.15,
+            subsystemDiskMultiplier: 1.10,
+            // Градации пользователей
+            userTiers: [
+                { min: 301, max: 500, ramMultiplier: 1.2, extraCores: 2, targetFreq: null },
+                { min: 501, max: 1000, ramMultiplier: 1.5, extraCores: 4, targetFreq: 3.0 },
+                { min: 1001, max: null, ramMultiplier: 2.0, extraCores: 8, targetFreq: 3.5 }
+            ],
+            // Формула диска
+            diskFormula: {
+                ranges: [
+                    { max: 3, coeff: 1.5, extra: 0 },
+                    { max: 10, coeff: 1.2, extra: 0 },
+                    { max: null, coeff: 1.0, extra: 20 }
+                ]
+            },
+            diskRecommendedPadding: 30
+        }
+    };
+
+    // Текущая конфигурация (загружается из localStorage или по умолчанию)
+    let config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+
+    // Загрузка сохранённой конфигурации
+    function loadConfig() {
+        const saved = localStorage.getItem('suntd_calculator_config');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                // Глубокое слияние (простое, но для наших целей достаточно)
+                config = deepMerge(DEFAULT_CONFIG, parsed);
+            } catch(e) { console.warn(e); }
+        }
+        applyConfigToUI();
+    }
+
+    function deepMerge(base, overrides) {
+        let result = JSON.parse(JSON.stringify(base));
+        for (let key in overrides) {
+            if (overrides.hasOwnProperty(key)) {
+                if (typeof overrides[key] === 'object' && overrides[key] !== null && !Array.isArray(overrides[key])) {
+                    result[key] = deepMerge(result[key], overrides[key]);
+                } else {
+                    result[key] = overrides[key];
+                }
+            }
+        }
+        return result;
+    }
+
+    function saveConfig() {
+        localStorage.setItem('suntd_calculator_config', JSON.stringify(config));
+        alert('Настройки сохранены. Страница будет перезагружена для применения.');
+        location.reload();
+    }
+
+    // Применяем конфиг к UI (заполняем select версий, рендерим подсистемы)
+    function applyConfigToUI() {
+        const platformSelect = document.getElementById('platformVersion');
+        platformSelect.innerHTML = '';
+        for (let ver in config.platformReqs) {
+            const option = document.createElement('option');
+            option.value = ver;
+            option.textContent = `Платформа ${ver}`;
+            platformSelect.appendChild(option);
+        }
+        renderSubsystems();
+        // Пересчёт будет вызван отдельно
+    }
+
+    // Функции рендеринга подсистем (используют config.subsystems)
+    function renderSubsystems() {
+        const container = document.getElementById('subsystemsContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        const currentVersion = document.getElementById('platformVersion').value;
+        config.subsystems.forEach(sub => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'subsystem-item';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.id = `sub_${sub.id}`;
+            cb.value = sub.id;
+            cb.addEventListener('change', (e) => {
+                if (e.target.checked) selectedSubsystems.add(sub.id);
+                else selectedSubsystems.delete(sub.id);
+                calculateWithoutScroll();
+            });
+            const label = document.createElement('label');
+            label.htmlFor = `sub_${sub.id}`;
+            const readableDiff = formatHumanReadableDiff(sub.requirements.server, currentVersion);
+            label.innerHTML = `${sub.name} <span style="font-size:0.7rem; color:#4b5563;">(требует: ${readableDiff})</span>`;
+            wrapper.appendChild(cb);
+            wrapper.appendChild(label);
+            container.appendChild(wrapper);
+        });
+    }
+
+    function formatHumanReadableDiff(subReqs, platformVersion) {
+        const baseReqs = config.platformReqs[platformVersion];
+        if (!baseReqs) return "неизвестная версия";
+        const parts = [];
+        if (subReqs.ram_gb !== undefined && subReqs.ram_gb !== baseReqs.ram_gb)
+            parts.push(`${subReqs.ram_gb} ГБ ОЗУ`);
+        if (subReqs.cpu_cores !== undefined && subReqs.cpu_cores !== baseReqs.cpu_cores)
+            parts.push(`${subReqs.cpu_cores} ядра (CPU)`);
+        if (subReqs.cpu_freq_ghz !== undefined && subReqs.cpu_freq_ghz !== baseReqs.cpu_freq_ghz)
+            parts.push(`${subReqs.cpu_freq_ghz} ГГц`);
+        if (parts.length === 0) return "базовые требования (не повышает)";
+        return parts.join(', ');
+    }
+
+    // Глобальные переменные для выбранных подсистем
+    let selectedSubsystems = new Set();
+
+    // Остальной код калькулятора (адаптированный под config)
+    function aggregateServerReqs(baseReqs, selectedSubsList) {
+        let result = { ...baseReqs };
+        for (let subId of selectedSubsList) {
+            const sub = config.subsystems.find(s => s.id === subId);
+            if (!sub || !sub.requirements.server) continue;
+            const subReqs = sub.requirements.server;
+            for (let [param, value] of Object.entries(subReqs)) {
+                if (value > result[param]) {
+                    result[param] = value;
+                }
+            }
+        }
+        return result;
+    }
+
+    function calcDiskSpace(baseDiskGb, docsMillion) {
+        const ranges = config.scaling.diskFormula.ranges;
+        let additional = 0;
+        let prevMax = 0;
+        for (let i = 0; i < ranges.length; i++) {
+            const range = ranges[i];
+            if (range.max === null) {
+                // последний диапазон
+                if (docsMillion > prevMax) {
+                    additional += (docsMillion - prevMax) * range.coeff + range.extra;
+                }
+                break;
+            } else {
+                if (docsMillion > prevMax) {
+                    const part = Math.min(docsMillion, range.max) - prevMax;
+                    additional += part * range.coeff + (i === 0 ? 0 : range.extra); // extra только для последнего? в нашей структуре extra только у последнего, но для общности
+                    prevMax = range.max;
+                } else break;
+            }
+        }
+        // Для совместимости со старой логикой (где extra был только для >10)
+        // Уточним: в нашей структуре extra добавляется только в последнем диапазоне
+        let total = baseDiskGb + additional;
+        return Math.ceil(total);
+    }
+
+    function checkOsCompatibility(selectedOsVal) {
+        const allowedWindows = ["win2012","win2016","win2019","win2022","win2025"];
+        const allowedLinux = ["linux_astra","linux_alt","linux_red","linux_atlant","linux_other"];
+        if (selectedOsVal === 'other') return { compatible: false, message: "Выбранная ОС не входит в официальный список поддерживаемых (Windows Server 2012/2016/2019/2022/2025 или Linux с ядром 3.0+ и совместимые дистрибутивы). Совместимость не гарантирована." };
+        if (allowedWindows.includes(selectedOsVal)) return { compatible: true, message: "" };
+        if (allowedLinux.includes(selectedOsVal)) return { compatible: true, message: "" };
+        return { compatible: false, message: "Выбранная ОС не соответствует требованиям. Для сервера необходима 64-разрядная ОС Windows Server (2012–2025) или Linux (ядро 3.0+ / Альт / Астра / РЕД / Атлант)." };
+    }
+
+    function renderServerTable(minReqs, finalRamMin, diskMin, recommended, diskRecommended, isVirtual) {
+        const tbody = document.querySelector('#serverTable tbody');
+        tbody.innerHTML = '';
+        const rows = [
+            { param: "Процессор (ядра/частота)", minVal: `${minReqs.cpu_cores} ядер, ${minReqs.cpu_freq_ghz} ГГц`, recVal: `${recommended.cpu_cores} ядер, ${recommended.cpu_freq_ghz} ГГц` },
+            { param: "Оперативная память (RAM)", minVal: `${finalRamMin} ГБ`, recVal: `${recommended.ram_gb} ГБ` },
+            { param: "Дисковое пространство (свободно)", minVal: `${diskMin} ГБ (SSD обязательно)`, recVal: `${diskRecommended} ГБ (SSD, RAID по возможности)` },
+            { param: "Сетевой адаптер", minVal: "1 Гбит/с и выше", recVal: "Рекомендуется 10 Гбит/с при большой нагрузке" },
+            { param: "Операционная система", minVal: `64-разрядная: Windows Server 2012/2016/2019/2022/2025 или Linux (ядро 3.0+ / Астра / Альт / РЕД / Атлант)`, recVal: `—` },
+            { param: "Настройки энергопотребления", minVal: "BIOS: макс. производительность; ОС: план «Высокая производительность»", recVal: isVirtual ? "Хост + гость — одинаковый план макс. производительности" : "—" }
+        ];
+        rows.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><strong>${r.param}</strong></td><td>${r.minVal}</td><td>${r.recVal}</td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderClientTables(winReqs, linReqs) {
+        const winTbody = document.querySelector('#clientWindowsTable tbody');
+        const linTbody = document.querySelector('#clientLinuxTable tbody');
+        const winRows = [
+            { param: "Процессор", val: `от ${winReqs.cpu_freq_ghz} ГГц` },
+            { param: "ОЗУ", val: `${winReqs.ram_gb} ГБ` },
+            { param: "Сетевой адаптер", val: `${winReqs.network_mbps} Мбит/с и выше` },
+            { param: "Операционная система", val: winReqs.os },
+            { param: "Браузер (последняя стабильная версия)", val: winReqs.browsers },
+            { param: "Дополнительно", val: "Только 64-разрядная ОС; включены JS, cookies, всплывающие окна" }
+        ];
+        winTbody.innerHTML = '';
+        winRows.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><strong>${r.param}</strong><td>${r.val}</td>`;
+            winTbody.appendChild(tr);
+        });
+        const linRows = [
+            { param: "Процессор", val: `от ${linReqs.cpu_freq_ghz} ГГц` },
+            { param: "ОЗУ", val: `${linReqs.ram_gb} ГБ` },
+            { param: "Сетевой адаптер", val: `${linReqs.network_mbps} Мбит/с и выше` },
+            { param: "Операционная система", val: linReqs.os },
+            { param: "Браузер (последняя стабильная версия)", val: linReqs.browsers },
+            { param: "Дополнительно", val: "Включены JS, cookies, всплывающие окна" }
+        ];
+        linTbody.innerHTML = '';
+        linRows.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><strong>${r.param}</strong><td>${r.val}</td>`;
+            linTbody.appendChild(tr);
+        });
+    }
+
+    function updateSubsystemsDetails(selectedSubsList) {
+        const block = document.getElementById('subsystemsDetailsBlock');
+        const content = document.getElementById('subsystemsDetailsContent');
+        const selectedSubsWithWarnings = selectedSubsList
+            .map(id => config.subsystems.find(s => s.id === id))
+            .filter(sub => sub && sub.extraWarnings && sub.extraWarnings.length > 0);
+        if (selectedSubsWithWarnings.length === 0) {
+            block.style.display = 'none';
+            return;
+        }
+        block.style.display = 'block';
+        let html = '';
+        selectedSubsWithWarnings.forEach(sub => {
+            html += `<div class="subsystem-detail-group">
+                        <strong>📌 ${sub.name}</strong>
+                        <ul>
+                            ${sub.extraWarnings.map(w => `<li>${w}</li>`).join('')}
+                        </ul>
+                    </div>`;
+        });
+        content.innerHTML = html;
+        content.classList.remove('show');
+        const headerSpan = document.querySelector('#subsystemsDetailsHeader span:last-child');
+        if (headerSpan) headerSpan.textContent = '▼';
+    }
+
+    function toggleSubsystemsDetails() {
+        const content = document.getElementById('subsystemsDetailsContent');
+        content.classList.toggle('show');
+        const headerSpan = document.querySelector('#subsystemsDetailsHeader span:last-child');
+        if (headerSpan) {
+            headerSpan.textContent = content.classList.contains('show') ? '▲' : '▼';
+        }
+    }
+
+    function performCalculation(doScroll = false) {
+        const platformVer = document.getElementById('platformVersion').value;
+        const deployMode = document.getElementById('deployMode').value;
+        let userCount = parseInt(document.getElementById('userCount').value, 10) || 0;
+        let docsMillion = parseFloat(document.getElementById('docCount').value) || 0;
+        const isVirtual = document.getElementById('virtualization').value === 'virtual';
+        const selectedOs = document.getElementById('serverOs').value;
+
+        let baseServer = { ...config.platformReqs[platformVer] };
+        let baseClientWin = { ...config.clientReqs.windows };
+        let baseClientLin = { ...config.clientReqs.linux };
+
+        if (deployMode === 'reference') {
+            baseServer.ram_gb = config.scaling.referenceModeFactor.ram_gb;
+            baseServer.cpu_cores = config.scaling.referenceModeFactor.cpu_cores;
+            baseServer.cpu_freq_ghz = config.scaling.referenceModeFactor.cpu_freq_ghz;
+        }
+
+        const selectedSubsArray = Array.from(selectedSubsystems);
+        let serverReqs = aggregateServerReqs(baseServer, selectedSubsArray);
+
+        let extraRamByDocs = 0;
+        if (docsMillion > config.scaling.baseDocsMillion) {
+            const over = docsMillion - config.scaling.baseDocsMillion;
+            const steps = Math.ceil(over / 3);
+            extraRamByDocs = steps * config.scaling.ramPerExtra3MillionGB;
+        }
+        let finalRamMin = serverReqs.ram_gb + extraRamByDocs;
+
+        // Коэффициент запаса подсистем
+        let subsystemCount = selectedSubsArray.length;
+        let subsystemRamMultiplier = 1.0;
+        let subsystemDiskMultiplier = 1.0;
+        if (subsystemCount >= config.scaling.subsystemCountThreshold) {
+            subsystemRamMultiplier = config.scaling.subsystemRamMultiplier;
+            subsystemDiskMultiplier = config.scaling.subsystemDiskMultiplier;
+        }
+        finalRamMin = Math.ceil(finalRamMin * subsystemRamMultiplier);
+
+        let diskMin = calcDiskSpace(baseServer.disk_free_gb_base, docsMillion);
+        diskMin = Math.ceil(diskMin * subsystemDiskMultiplier);
+        const diskRecommended = diskMin + config.scaling.diskRecommendedPadding;
+
+        // Градации пользователей
+        let userTier = null;
+        let ramUserMultiplier = 1.0;
+        let extraCores = 0;
+        let targetFreq = null;
+        let userWarningMessage = "";
+        for (let tier of config.scaling.userTiers) {
+            if (userCount >= tier.min && (tier.max === null || userCount <= tier.max)) {
+                userTier = tier;
+                ramUserMultiplier = tier.ramMultiplier;
+                extraCores = tier.extraCores;
+                targetFreq = tier.targetFreq;
+                userWarningMessage = `Количество пользователей (${userCount}) в диапазоне ${tier.min}-${tier.max || '∞'}. Рекомендуется увеличить RAM на ${Math.round((tier.ramMultiplier-1)*100)}% и добавить ${extraCores} ядра CPU.${targetFreq ? ` Частота до ${targetFreq} ГГц.` : ''}`;
+                break;
+            }
+        }
+        if (userTier) {
+            finalRamMin = Math.ceil(finalRamMin * ramUserMultiplier);
+        }
+
+        let recommendedServer = { ...serverReqs };
+        recommendedServer.ram_gb = finalRamMin;
+        recommendedServer.cpu_cores = serverReqs.cpu_cores + extraCores;
+        if (targetFreq) {
+            recommendedServer.cpu_freq_ghz = Math.max(recommendedServer.cpu_freq_ghz, targetFreq);
+        }
+
+        const osCheck = checkOsCompatibility(selectedOs);
+
+        let warningsList = [];
+        if (userTier) warningsList.push(`👥 ${userWarningMessage}`);
+        if (docsMillion > config.scaling.baseDocsMillion) {
+            warningsList.push(`📚 Объем документов ${docsMillion} млн (>${config.scaling.baseDocsMillion} млн). Автоматически добавлено +${extraRamByDocs} ГБ ОЗУ к минимальным требованиям (правило: +4 ГБ на каждые 3 млн док.).`);
+        }
+        if (isVirtual) {
+            warningsList.push(`🖧 Виртуальный сервер: критически важно настроить энергопотребление (BIOS → максимальная производительность, план питания хоста и гостя — «Высокая производительность»). Разместите тома БД на виртуальном диске, подключенном как локальный (не по сети!). Сетевое подключение томов БД снижает производительность на 20-30% даже на 10 Гбит/с.`);
+        }
+        if (!osCheck.compatible) warningsList.push(`🖥️ ${osCheck.message}`);
+        if (!isVirtual) {
+            warningsList.push(`⚙️ Для физического сервера в UEFI/BIOS обязательно установите настройки энергопотребления в режим максимальной производительности (например, Energy Performance BIAS setting). В ОС выберите план «Высокая производительность».`);
+        }
+        if (selectedSubsystems.has("soglasovanie") && !selectedOs.startsWith("win")) {
+            warningsList.push("⚠️ Подсистема «Согласование НД» требует Windows Server (серверная часть). Linux не поддерживается.");
+        }
+        if (selectedSubsystems.has("kassist4") && selectedOs.startsWith("win")) {
+            warningsList.push("⚠️ Подсистема «кАссист 4» на сервере может работать под Windows, но клиентская часть ориентирована только на Linux. Убедитесь в совместимости.");
+        }
+        if (subsystemCount >= config.scaling.subsystemCountThreshold) {
+            warningsList.push(`🔧 Выбрано ${subsystemCount} подсистем. Применён коэффициент запаса: RAM +${Math.round((config.scaling.subsystemRamMultiplier-1)*100)}%, диск +${Math.round((config.scaling.subsystemDiskMultiplier-1)*100)}% к минимальным требованиям.`);
+        }
+
+        renderServerTable(serverReqs, finalRamMin, diskMin, recommendedServer, diskRecommended, isVirtual);
+        renderClientTables(baseClientWin, baseClientLin);
+
+        document.getElementById('serverExtraNote').innerHTML = `<strong>🌐 Сетевые требования сервера:</strong> 1 Гбит/с и выше. ${isVirtual ? 'При виртуализации не размещать тома БД по сети.' : ''}`;
+
+        const warningsDiv = document.getElementById('warningsArea');
+        warningsDiv.innerHTML = '';
+        if (warningsList.length) {
+            const ul = document.createElement('ul');
+            ul.className = 'warning-list';
+            warningsList.forEach(msg => {
+                const li = document.createElement('li');
+                li.innerHTML = msg;
+                ul.appendChild(li);
+            });
+            warningsDiv.appendChild(ul);
+        } else {
+            warningsDiv.innerHTML = '<div style="color: #2b6e3b;">✅ Все требования соответствуют утвержденным ТТ.</div>';
+        }
+
+        updateSubsystemsDetails(selectedSubsArray);
+
+        const scalingNote = document.getElementById('scalingNote');
+        scalingNote.innerHTML = `
+            <strong>📐 Примечания по расчету:</strong><br>
+            • Базовые требования сервера (минимальные): ${serverReqs.cpu_cores} ядер / ${serverReqs.cpu_freq_ghz} ГГц, ОЗУ ${serverReqs.ram_gb} ГБ (до масштабирования по документам и пользователям).<br>
+            • Диск: минимальный свободный объем ${diskMin} ГБ (с учётом запаса). Рекомендуется SSD.<br>
+            • ${deployMode === 'reference' ? 'Режим "Только Справочная система" понижает базовые требования (ОЗУ 8 ГБ, 2 ядра).' : 'Полный контур СУНТД — штатные требования 16 ГБ/4 ядра.'}<br>
+            • Для корректной работы обязательно соблюдать настройки энергопотребления (BIOS/ОС) и при виртуализации размещать БД локально.
+        `;
+
+        document.getElementById('resultPanel').style.display = 'block';
+        if (doScroll) {
+            window.scrollTo({ top: document.getElementById('resultPanel').offsetTop - 20, behavior: 'smooth' });
+        }
+    }
+
+    function calculateWithoutScroll() { performCalculation(false); }
+    function calculateWithScroll() { performCalculation(true); }
+
+    function exportSummary() {
+        let text = "=== Калькулятор ТТ СУНТД ===\n";
+        text += `Версия Платформы: ${document.getElementById('platformVersion').value} | Режим: ${document.getElementById('deployMode').options[document.getElementById('deployMode').selectedIndex].text}\n`;
+        text += `Пользователи: ${document.getElementById('userCount').value} | Документы: ${document.getElementById('docCount').value} млн\n`;
+        text += "\n--- Серверные требования ---\n";
+        const serverRows = document.querySelectorAll('#serverTable tbody tr');
+        serverRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 2) text += `${cells[0].innerText} : ${cells[1].innerText} (рек. ${cells[2]?.innerText || '-'})\n`;
+        });
+        text += "\n--- Клиентские требования (Windows) ---\n";
+        const winRows = document.querySelectorAll('#clientWindowsTable tbody tr');
+        winRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 2) text += `${cells[0].innerText} : ${cells[1].innerText}\n`;
+        });
+        text += "\n--- Клиентские требования (Linux) ---\n";
+        const linRows = document.querySelectorAll('#clientLinuxTable tbody tr');
+        linRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 2) text += `${cells[0].innerText} : ${cells[1].innerText}\n`;
+        });
+        const warningsText = document.getElementById('warningsArea').innerText;
+        if (warningsText) text += "\n--- Предупреждения ---\n" + warningsText;
+        const detailsBlock = document.getElementById('subsystemsDetailsBlock');
+        if (detailsBlock.style.display !== 'none') {
+            text += "\n--- Дополнительные требования подсистем ---\n";
+            const detailGroups = document.querySelectorAll('.subsystem-detail-group');
+            detailGroups.forEach(group => {
+                const title = group.querySelector('strong')?.innerText || '';
+                const items = Array.from(group.querySelectorAll('li')).map(li => li.innerText);
+                text += `${title}:\n`;
+                items.forEach(item => text += `  - ${item}\n`);
+            });
+        }
+        navigator.clipboard.writeText(text).then(() => alert("Сводка скопирована в буфер обмена"));
+    }
+
+    // Инициализация обработчиков
+    document.getElementById('calcBtn').addEventListener('click', calculateWithScroll);
+    document.getElementById('exportBtn').addEventListener('click', exportSummary);
+    document.getElementById('subsystemsDetailsHeader').addEventListener('click', toggleSubsystemsDetails);
+    document.getElementById('platformVersion').addEventListener('change', () => {
+        renderSubsystems();
+        calculateWithoutScroll();
+    });
+    document.getElementById('deployMode').addEventListener('change', () => calculateWithoutScroll());
+    document.getElementById('userCount').addEventListener('input', () => calculateWithoutScroll());
+    document.getElementById('docCount').addEventListener('input', () => calculateWithoutScroll());
+    document.getElementById('virtualization').addEventListener('change', () => calculateWithoutScroll());
+    document.getElementById('serverOs').addEventListener('change', () => calculateWithoutScroll());
+
+    // Загрузка сохранённой конфигурации и старт
+    loadConfig();
+    setTimeout(() => calculateWithoutScroll(), 100);
+
+    // ------ Админ панель (модальное окно) ------
+    const adminBtn = document.getElementById('adminBtn');
+    const modal = document.getElementById('adminModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    function openModal() { modal.style.display = 'flex'; renderAdminPanel(); }
+    function closeModal() { modal.style.display = 'none'; }
+    adminBtn.onclick = openModal;
+    closeModalBtn.onclick = closeModal;
+    window.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+    function renderAdminPanel() {
+        const activeTab = document.querySelector('.modal-tab.active').dataset.tab;
+        const body = document.getElementById('modalBody');
+        if (activeTab === 'platform') {
+            body.innerHTML = renderPlatformTab();
+        } else if (activeTab === 'client') {
+            body.innerHTML = renderClientTab();
+        } else if (activeTab === 'subsystems') {
+            body.innerHTML = renderSubsystemsTab();
+        } else if (activeTab === 'scaling') {
+            body.innerHTML = renderScalingTab();
+        }
+        attachAdminEventListeners();
+    }
+
+    function renderPlatformTab() {
+        let html = `<div class="admin-form-group"><button id="addPlatformBtn" class="btn-small">+ Добавить версию</button></div>`;
+        html += `<table class="admin-table"><thead><tr><th>Версия</th><th>CPU ядер</th><th>Частота (ГГц)</th><th>RAM (ГБ)</th><th>База диска (ГБ)</th><th>Сеть (Гбит)</th><th>Действия</th></tr></thead><tbody>`;
+        for (let ver in config.platformReqs) {
+            const p = config.platformReqs[ver];
+            html += `<tr data-version="${ver}">
+                        <td>${ver}</td>
+                        <td><input type="number" step="1" class="edit-cpu-cores" value="${p.cpu_cores}"></td>
+                        <td><input type="number" step="0.1" class="edit-cpu-freq" value="${p.cpu_freq_ghz}"></td>
+                        <td><input type="number" step="1" class="edit-ram" value="${p.ram_gb}"></td>
+                        <td><input type="number" step="1" class="edit-disk-base" value="${p.disk_free_gb_base}"></td>
+                        <td><input type="number" step="0.1" class="edit-network" value="${p.network_gbit}"></td>
+                        <td><button class="btn-small copy-version" data-version="${ver}">Копировать</button> <button class="btn-small btn-danger delete-version" data-version="${ver}">Удалить</button></td>
+                     </tr>`;
+        }
+        html += `</tbody></table>`;
+        return html;
+    }
+
+    function renderClientTab() {
+        const win = config.clientReqs.windows;
+        const lin = config.clientReqs.linux;
+        return `
+            <h4>Клиент Windows</h4>
+            <div class="admin-form-group"><label>CPU частота (ГГц)</label><input type="number" step="0.1" id="win_cpu_freq" value="${win.cpu_freq_ghz}"></div>
+            <div class="admin-form-group"><label>RAM (ГБ)</label><input type="number" step="1" id="win_ram" value="${win.ram_gb}"></div>
+            <div class="admin-form-group"><label>Сеть (Мбит/с)</label><input type="number" step="10" id="win_net" value="${win.network_mbps}"></div>
+            <div class="admin-form-group"><label>ОС</label><input type="text" id="win_os" value="${win.os}"></div>
+            <div class="admin-form-group"><label>Браузеры</label><input type="text" id="win_browsers" value="${win.browsers}"></div>
+            <h4>Клиент Linux</h4>
+            <div class="admin-form-group"><label>CPU частота (ГГц)</label><input type="number" step="0.1" id="lin_cpu_freq" value="${lin.cpu_freq_ghz}"></div>
+            <div class="admin-form-group"><label>RAM (ГБ)</label><input type="number" step="1" id="lin_ram" value="${lin.ram_gb}"></div>
+            <div class="admin-form-group"><label>Сеть (Мбит/с)</label><input type="number" step="10" id="lin_net" value="${lin.network_mbps}"></div>
+            <div class="admin-form-group"><label>ОС</label><input type="text" id="lin_os" value="${lin.os}"></div>
+            <div class="admin-form-group"><label>Браузеры</label><input type="text" id="lin_browsers" value="${lin.browsers}"></div>
+        `;
+    }
+
+    function renderSubsystemsTab() {
+        let html = `<div class="admin-form-group"><button id="addSubsystemBtn" class="btn-small">+ Добавить подсистему</button></div>`;
+        html += `<div id="subsystemsList">`;
+        config.subsystems.forEach((sub, idx) => {
+            html += `<div class="admin-form-group" data-subsys-index="${idx}" style="border:1px solid #e2e8f0; padding:0.8rem; margin-bottom:0.8rem; border-radius:16px;">
+                        <strong>${sub.name}</strong>
+                        <div><label>ID</label><input type="text" class="subsys-id" value="${sub.id}"></div>
+                        <div><label>Название</label><input type="text" class="subsys-name" value="${sub.name}"></div>
+                        <div><label>Требования (RAM, CPU ядра, CPU частота)</label><input type="text" class="subsys-reqs" value="${sub.requirements.server.ram_gb}, ${sub.requirements.server.cpu_cores}, ${sub.requirements.server.cpu_freq_ghz}"></div>
+                        <div><label>extraWarnings (каждая с новой строки)</label><textarea class="subsys-warnings" rows="3">${sub.extraWarnings.join('\n')}</textarea></div>
+                        <button class="btn-small btn-danger delete-subsystem" data-idx="${idx}">Удалить</button>
+                    </div>`;
+        });
+        html += `</div>`;
+        return html;
+    }
+
+    function renderScalingTab() {
+        const s = config.scaling;
+        const tiers = s.userTiers;
+        const ranges = s.diskFormula.ranges;
+        return `
+            <h4>Масштабирование по документам</h4>
+            <div class="admin-form-group"><label>baseDocsMillion</label><input type="number" id="baseDocs" value="${s.baseDocsMillion}"></div>
+            <div class="admin-form-group"><label>ramPerExtra3MillionGB</label><input type="number" id="ramPerExtra" value="${s.ramPerExtra3MillionGB}"></div>
+            <h4>Коэффициент запаса подсистем</h4>
+            <div class="admin-form-group"><label>Порог количества подсистем</label><input type="number" id="subsysThresh" value="${s.subsystemCountThreshold}"></div>
+            <div class="admin-form-group"><label>Множитель RAM</label><input type="number" step="0.01" id="subsysRamMult" value="${s.subsystemRamMultiplier}"></div>
+            <div class="admin-form-group"><label>Множитель диска</label><input type="number" step="0.01" id="subsysDiskMult" value="${s.subsystemDiskMultiplier}"></div>
+            <h4>Градации пользователей</h4>
+            <div id="tiersContainer">
+                ${tiers.map((t, i) => `<div style="border:1px solid #e2e8f0; padding:0.5rem; margin-bottom:0.5rem;">
+                    <label>Диапазон: от ${t.min} до ${t.max === null ? '∞' : t.max}</label>
+                    <div><label>Множитель RAM</label><input type="number" step="0.1" class="tier-ram-mult" value="${t.ramMultiplier}"></div>
+                    <div><label>Добавляемых ядер</label><input type="number" class="tier-cores" value="${t.extraCores}"></div>
+                    <div><label>Целевая частота (ГГц, опционально)</label><input type="number" step="0.1" class="tier-freq" value="${t.targetFreq === null ? '' : t.targetFreq}"></div>
+                    <button class="btn-small btn-danger remove-tier" data-tier="${i}">Удалить диапазон</button>
+                </div>`).join('')}
+            </div>
+            <button id="addTierBtn" class="btn-small">+ Добавить диапазон</button>
+            <h4>Формула диска</h4>
+            <div id="diskRangesContainer">
+                ${ranges.map((r, i) => `<div style="border:1px solid #e2e8f0; padding:0.5rem; margin-bottom:0.5rem;">
+                    <label>Макс. млн (пусто = ∞)</label><input type="number" class="range-max" value="${r.max === null ? '' : r.max}">
+                    <label>Коэффициент</label><input type="number" step="0.1" class="range-coeff" value="${r.coeff}">
+                    <label>Доп. запас (ГБ)</label><input type="number" class="range-extra" value="${r.extra}">
+                    <button class="btn-small btn-danger remove-range" data-range="${i}">Удалить диапазон</button>
+                </div>`).join('')}
+            </div>
+            <button id="addRangeBtn" class="btn-small">+ Добавить диапазон</button>
+            <h4>Рекомендуемый диск</h4>
+            <div class="admin-form-group"><label>Добавка к минимальному (ГБ)</label><input type="number" id="diskPadding" value="${s.diskRecommendedPadding}"></div>
+            <h4>Режим "Только справочная система"</h4>
+            <div class="admin-form-group"><label>RAM (ГБ)</label><input type="number" id="refRam" value="${s.referenceModeFactor.ram_gb}"></div>
+            <div class="admin-form-group"><label>CPU ядер</label><input type="number" id="refCores" value="${s.referenceModeFactor.cpu_cores}"></div>
+            <div class="admin-form-group"><label>CPU частота (ГГц)</label><input type="number" step="0.1" id="refFreq" value="${s.referenceModeFactor.cpu_freq_ghz}"></div>
+        `;
+    }
+
+    function attachAdminEventListeners() {
+        // Версии платформы
+        document.querySelectorAll('.copy-version').forEach(btn => {
+            btn.onclick = () => {
+                const ver = btn.dataset.version;
+                const newVer = prompt('Введите название новой версии (например, 6.5.0)');
+                if (newVer && !config.platformReqs[newVer]) {
+                    config.platformReqs[newVer] = JSON.parse(JSON.stringify(config.platformReqs[ver]));
+                    renderAdminPanel();
+                } else alert('Версия уже существует или имя не задано');
+            };
+        });
+        document.querySelectorAll('.delete-version').forEach(btn => {
+            btn.onclick = () => {
+                const ver = btn.dataset.version;
+                if (ver !== '6.4.5' && ver !== '6.4.6' && confirm(`Удалить версию ${ver}?`)) {
+                    delete config.platformReqs[ver];
+                    renderAdminPanel();
+                } else alert('Нельзя удалить базовые версии');
+            };
+        });
+        const addPlatformBtn = document.getElementById('addPlatformBtn');
+        if (addPlatformBtn) addPlatformBtn.onclick = () => {
+            const newVer = prompt('Название версии (например, 6.5.0)');
+            if (newVer && !config.platformReqs[newVer]) {
+                config.platformReqs[newVer] = JSON.parse(JSON.stringify(config.platformReqs['6.4.5']));
+                renderAdminPanel();
+            }
+        };
+        // Клиентские требования
+        const winFields = ['win_cpu_freq','win_ram','win_net','win_os','win_browsers'];
+        const linFields = ['lin_cpu_freq','lin_ram','lin_net','lin_os','lin_browsers'];
+        // Подсистемы
+        const addSubsysBtn = document.getElementById('addSubsystemBtn');
+        if (addSubsysBtn) addSubsysBtn.onclick = () => {
+            const newId = prompt('Введите ID подсистемы (уникальный)');
+            if (newId && !config.subsystems.find(s => s.id === newId)) {
+                config.subsystems.push({
+                    id: newId,
+                    name: 'Новая подсистема',
+                    requirements: { server: { ram_gb: 16, cpu_cores: 4, cpu_freq_ghz: 2.7 } },
+                    extraWarnings: []
+                });
+                renderAdminPanel();
+            }
+        };
+        document.querySelectorAll('.delete-subsystem').forEach(btn => {
+            btn.onclick = () => {
+                const idx = parseInt(btn.dataset.idx);
+                if (confirm('Удалить подсистему?')) {
+                    config.subsystems.splice(idx, 1);
+                    renderAdminPanel();
+                }
+            };
+        });
+        // Масштабирование: сохраним обработчики позже через общий save
+    }
+
+    function collectAdminData() {
+        // Сбор данных из активной вкладки (упрощённо, для сохранения сохраним все изменения через поля)
+        // Так как данные могут быть разбросаны, мы будем при сохранении считывать все поля напрямую из DOM
+        // Для платформ
+        const versionRows = document.querySelectorAll('#modalBody table tbody tr');
+        if (versionRows.length) {
+            versionRows.forEach(row => {
+                const ver = row.dataset.version;
+                if (ver && config.platformReqs[ver]) {
+                    config.platformReqs[ver].cpu_cores = parseInt(row.querySelector('.edit-cpu-cores').value);
+                    config.platformReqs[ver].cpu_freq_ghz = parseFloat(row.querySelector('.edit-cpu-freq').value);
+                    config.platformReqs[ver].ram_gb = parseInt(row.querySelector('.edit-ram').value);
+                    config.platformReqs[ver].disk_free_gb_base = parseInt(row.querySelector('.edit-disk-base').value);
+                    config.platformReqs[ver].network_gbit = parseFloat(row.querySelector('.edit-network').value);
+                }
+            });
+        }
+        // Клиентские требования
+        if (document.getElementById('win_cpu_freq')) {
+            config.clientReqs.windows = {
+                cpu_freq_ghz: parseFloat(document.getElementById('win_cpu_freq').value),
+                ram_gb: parseInt(document.getElementById('win_ram').value),
+                network_mbps: parseInt(document.getElementById('win_net').value),
+                os: document.getElementById('win_os').value,
+                browsers: document.getElementById('win_browsers').value
+            };
+            config.clientReqs.linux = {
+                cpu_freq_ghz: parseFloat(document.getElementById('lin_cpu_freq').value),
+                ram_gb: parseInt(document.getElementById('lin_ram').value),
+                network_mbps: parseInt(document.getElementById('lin_net').value),
+                os: document.getElementById('lin_os').value,
+                browsers: document.getElementById('lin_browsers').value
+            };
+        }
+        // Подсистемы
+        const subsysDivs = document.querySelectorAll('#subsystemsList > div');
+        if (subsysDivs.length) {
+            let newSubsystems = [];
+            subsysDivs.forEach(div => {
+                const id = div.querySelector('.subsys-id').value;
+                const name = div.querySelector('.subsys-name').value;
+                const reqsStr = div.querySelector('.subsys-reqs').value;
+                const [ram, cores, freq] = reqsStr.split(',').map(s => parseFloat(s.trim()));
+                const warningsText = div.querySelector('.subsys-warnings').value;
+                const extraWarnings = warningsText.split('\n').filter(l => l.trim().length > 0);
+                newSubsystems.push({
+                    id, name,
+                    requirements: { server: { ram_gb: ram, cpu_cores: cores, cpu_freq_ghz: freq } },
+                    extraWarnings
+                });
+            });
+            config.subsystems = newSubsystems;
+        }
+        // Масштабирование
+        if (document.getElementById('baseDocs')) {
+            config.scaling.baseDocsMillion = parseFloat(document.getElementById('baseDocs').value);
+            config.scaling.ramPerExtra3MillionGB = parseFloat(document.getElementById('ramPerExtra').value);
+            config.scaling.subsystemCountThreshold = parseInt(document.getElementById('subsysThresh').value);
+            config.scaling.subsystemRamMultiplier = parseFloat(document.getElementById('subsysRamMult').value);
+            config.scaling.subsystemDiskMultiplier = parseFloat(document.getElementById('subsysDiskMult').value);
+            // Градации пользователей
+            const tierDivs = document.querySelectorAll('#tiersContainer > div');
+            let newTiers = [];
+            tierDivs.forEach(div => {
+                const ramMult = parseFloat(div.querySelector('.tier-ram-mult').value);
+                const cores = parseInt(div.querySelector('.tier-cores').value);
+                const freq = parseFloat(div.querySelector('.tier-freq').value) || null;
+                // Min и max берём из заголовка (можно вынести в поля, но для простоты оставим как есть)
+                // Мы не можем динамически менять границы в этом интерфейсе, поэтому пропустим. Добавим позже.
+                // В демо версии оставим старые границы.
+            });
+            // Дисковые диапазоны
+            const rangeDivs = document.querySelectorAll('#diskRangesContainer > div');
+            let newRanges = [];
+            rangeDivs.forEach(div => {
+                let max = div.querySelector('.range-max').value;
+                max = (max === '') ? null : parseFloat(max);
+                const coeff = parseFloat(div.querySelector('.range-coeff').value);
+                const extra = parseFloat(div.querySelector('.range-extra').value);
+                newRanges.push({ max, coeff, extra });
+            });
+            config.scaling.diskFormula.ranges = newRanges;
+            config.scaling.diskRecommendedPadding = parseInt(document.getElementById('diskPadding').value);
+            config.scaling.referenceModeFactor = {
+                ram_gb: parseInt(document.getElementById('refRam').value),
+                cpu_cores: parseInt(document.getElementById('refCores').value),
+                cpu_freq_ghz: parseFloat(document.getElementById('refFreq').value)
+            };
+        }
+    }
+
+    document.getElementById('saveConfigBtn').onclick = () => {
+        collectAdminData();
+        saveConfig();
+    };
+    document.getElementById('resetConfigBtn').onclick = () => {
+        if (confirm('Сбросить все настройки к заводским?')) {
+            localStorage.removeItem('suntd_calculator_config');
+            location.reload();
+        }
+    };
+    document.getElementById('exportConfigBtn').onclick = () => {
+        const dataStr = JSON.stringify(config, null, 2);
+        const blob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'calculator_config.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+    document.getElementById('importConfigBtn').onclick = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const imported = JSON.parse(ev.target.result);
+                    config = deepMerge(DEFAULT_CONFIG, imported);
+                    saveConfig();
+                } catch(err) { alert('Ошибка импорта'); }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    };
+
+    // Переключение вкладок
+    document.querySelectorAll('.modal-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            renderAdminPanel();
+        });
+    });
+</script>
+</body>
+</html>

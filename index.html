@@ -499,7 +499,7 @@
                     <table class="result-table" id="clientWindowsTable">
                         <thead><tr><th>Параметр</th><th>Требования</th></tr></thead>
                         <tbody></tbody>
-                    </table>
+                    </td>
                 </div>
                 <div class="client-os-section">
                     <h4 style="margin:0 0 8px 0">🐧 Linux</h4>
@@ -1085,8 +1085,8 @@
                           <td><input type="number" step="1" class="edit-ram" value="${p.ram_gb}" style="width:70px"></td>
                           <td><input type="number" step="1" class="edit-disk-base" value="${p.disk_free_gb_base}" style="width:70px"></td>
                           <td><input type="number" step="0.1" class="edit-network" value="${p.network_gbit}" style="width:70px"></td>
-                          <td><button class="btn-small copy-version" data-version="${ver}">Копировать</button> <button class="btn-small btn-danger delete-version" data-version="${ver}">Удалить</button></td>
-                       </tr>`;
+                          <td><button class="btn-small copy-version" data-version="${ver}">Создать на основе</button> <button class="btn-small btn-danger delete-version" data-version="${ver}">Удалить</button></td>
+                       </td>`;
         }
         html += `</tbody></table>`;
         return html;
@@ -1177,7 +1177,6 @@
     }
 
     function attachGlobalDelegation() {
-        // Удаляем старые обработчики, чтобы не дублировать, но делегирование на modalBody
         modalBody.removeEventListener('click', handleModalClick);
         modalBody.addEventListener('click', handleModalClick);
     }
@@ -1191,7 +1190,7 @@
             if (newVer && !config.platformReqs[newVer]) {
                 config.platformReqs[newVer] = JSON.parse(JSON.stringify(config.platformReqs[ver]));
                 renderAdminPanel();
-            } else if (!newVer) {} else alert('Версия уже существует');
+            } else if (newVer) alert('Версия уже существует');
         }
         else if (target.classList.contains('delete-version')) {
             const ver = target.dataset.version;
@@ -1203,7 +1202,17 @@
         else if (target.id === 'addPlatformBtn') {
             const newVer = prompt('Название версии (например, 6.5.0)');
             if (newVer && !config.platformReqs[newVer]) {
-                config.platformReqs[newVer] = JSON.parse(JSON.stringify(config.platformReqs['6.4.5']));
+                config.platformReqs[newVer] = {
+                    cpu_cores: 0,
+                    cpu_freq_ghz: 0,
+                    ram_gb: 0,
+                    disk_free_gb_base: 0,
+                    network_gbit: 0,
+                    bios_power_setting: true,
+                    os_windows: [],
+                    os_linux_compatible: [],
+                    power_plan_recommended: ""
+                };
                 renderAdminPanel();
             } else if (newVer) alert('Версия уже существует');
         }
@@ -1317,7 +1326,7 @@
             config.scaling.subsystemCountThreshold = parseInt(document.getElementById('subsysThresh').value);
             config.scaling.subsystemRamMultiplier = parseFloat(document.getElementById('subsysRamMult').value);
             config.scaling.subsystemDiskMultiplier = parseFloat(document.getElementById('subsysDiskMult').value);
-            // Градации пользователей
+            // Сбор градаций пользователей
             const tierDivs = document.querySelectorAll('#tiersContainer .config-block');
             let newTiers = [];
             tierDivs.forEach(div => {
@@ -1330,7 +1339,7 @@
                 newTiers.push({ min, max, ramMultiplier: ramMult, extraCores: cores, targetFreq: freq });
             });
             config.scaling.userTiers = newTiers;
-            // Дисковые диапазоны
+            // Сбор диапазонов диска
             const rangeDivs = document.querySelectorAll('#diskRangesContainer .config-block');
             let newRanges = [];
             rangeDivs.forEach(div => {

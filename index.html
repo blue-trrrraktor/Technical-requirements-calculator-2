@@ -381,6 +381,17 @@
             color: #64748b;
             margin-top: 0.2rem;
         }
+        /* Чередование фона для блоков в масштабировании */
+        .config-block {
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border-radius: 16px;
+            background: #f8fafc;
+        }
+        .config-block:nth-child(even) {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+        }
         @media (max-width: 780px) {
             .card {
                 padding: 1.2rem;
@@ -490,7 +501,6 @@
                 <div class="note">Клиентские требования не зависят от нагрузки и одинаковы для всех версий Платформы.<br>Для браузеров необходима поддержка JavaScript, cookies, всплывающих окон. Используйте последние стабильные версии.</div>
             </div>
         </div>
-        <!-- Эти блоки идут после .two-cols, на всю ширину -->
         <div id="warningsArea" style="margin-top: 1.5rem; background: #fff7e6; padding: 1rem; border-radius: 20px;"></div>
         <div id="subsystemsDetailsBlock" class="subsystems-details" style="display: none;">
             <div class="subsystems-details-header" id="subsystemsDetailsHeader">
@@ -510,7 +520,6 @@
 
 <button class="admin-btn" id="adminBtn">⚙️ Настройка ограничений нагрузки</button>
 
-<!-- Модальное окно администрирования -->
 <div id="adminModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -743,7 +752,6 @@
                 } else break;
             }
         }
-        // Добавляем extra для последнего диапазона (он уже учтён в блоке выше, но для первого и второго extra=0)
         let total = baseDiskGb + additional;
         return Math.ceil(total);
     }
@@ -932,7 +940,7 @@
             warningsList.push("⚠️ Подсистема «кАссист 4» на сервере может работать под Windows, но клиентская часть ориентирована только на Linux. Убедитесь в совместимости.");
         }
         if (subsystemCount >= config.scaling.subsystemCountThreshold) {
-            warningsList.push(`🔧 Выбрано ${subsystemCount} подсистем. Применён коэффициент запаса: RAM +${Math.round((config.scaling.subsystemRamMultiplier-1)*100)}%, диск +${Math.round((config.scaling.subsystemDiskMultiplier-1)*100)}% к минимальным требованиям.`);
+            warningsList.push(`🔧 Выбрано ${subsystemCount} подсистем. Применен коэффициент запаса: RAM +${Math.round((config.scaling.subsystemRamMultiplier-1)*100)}%, диск +${Math.round((config.scaling.subsystemDiskMultiplier-1)*100)}% к минимальным требованиям.`);
         }
 
         renderServerTable(serverReqs, finalRamMin, diskMin, recommendedServer, diskRecommended, isVirtual);
@@ -961,7 +969,7 @@
         scalingNote.innerHTML = `
             <strong>📐 Примечания по расчету:</strong><br>
             • Базовые требования сервера (минимальные): ${serverReqs.cpu_cores} ядер / ${serverReqs.cpu_freq_ghz} ГГц, ОЗУ ${serverReqs.ram_gb} ГБ (до масштабирования по документам и пользователям).<br>
-            • Диск: минимальный свободный объем ${diskMin} ГБ (с учётом запаса). Рекомендуется SSD.<br>
+            • Диск: минимальный свободный объем ${diskMin} ГБ (с учетом запаса). Рекомендуется SSD.<br>
             • ${deployMode === 'reference' ? 'Режим "Только Справочная система" понижает базовые требования (ОЗУ 8 ГБ, 2 ядра).' : 'Полный контур СУНТД — штатные требования 16 ГБ/4 ядра.'}<br>
             • Для корректной работы обязательно соблюдать настройки энергопотребления (BIOS/ОС) и при виртуализации размещать БД локально.
         `;
@@ -1013,7 +1021,6 @@
         navigator.clipboard.writeText(text).then(() => alert("Сводка скопирована в буфер обмена"));
     }
 
-    // Обработчики событий для основной страницы
     document.getElementById('calcBtn').addEventListener('click', calculateWithScroll);
     document.getElementById('exportBtn').addEventListener('click', exportSummary);
     document.getElementById('subsystemsDetailsHeader').addEventListener('click', toggleSubsystemsDetails);
@@ -1030,7 +1037,7 @@
     loadConfig();
     setTimeout(() => calculateWithoutScroll(), 100);
 
-    // ----- Административная панель -----
+    // ----- Административная панель (полностью переработанная) -----
     const adminBtn = document.getElementById('adminBtn');
     const modal = document.getElementById('adminModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
@@ -1062,14 +1069,14 @@
         for (let ver in config.platformReqs) {
             const p = config.platformReqs[ver];
             html += `<tr data-version="${ver}">
-                         <td>${ver}</td>
-                         <td><input type="number" step="1" class="edit-cpu-cores" value="${p.cpu_cores}" style="width:70px"></td>
-                         <td><input type="number" step="0.1" class="edit-cpu-freq" value="${p.cpu_freq_ghz}" style="width:70px"></td>
-                         <td><input type="number" step="1" class="edit-ram" value="${p.ram_gb}" style="width:70px"></td>
-                         <td><input type="number" step="1" class="edit-disk-base" value="${p.disk_free_gb_base}" style="width:70px"></td>
-                         <td><input type="number" step="0.1" class="edit-network" value="${p.network_gbit}" style="width:70px"></td>
-                         <td><button class="btn-small copy-version" data-version="${ver}">Копировать</button> <button class="btn-small btn-danger delete-version" data-version="${ver}">Удалить</button></td>
-                      </tr>`;
+                          <td>${ver}</td>
+                          <td><input type="number" step="1" class="edit-cpu-cores" value="${p.cpu_cores}" style="width:70px"></td>
+                          <td><input type="number" step="0.1" class="edit-cpu-freq" value="${p.cpu_freq_ghz}" style="width:70px"></td>
+                          <td><input type="number" step="1" class="edit-ram" value="${p.ram_gb}" style="width:70px"></td>
+                          <td><input type="number" step="1" class="edit-disk-base" value="${p.disk_free_gb_base}" style="width:70px"></td>
+                          <td><input type="number" step="0.1" class="edit-network" value="${p.network_gbit}" style="width:70px"></td>
+                          <td><button class="btn-small copy-version" data-version="${ver}">Копировать</button> <button class="btn-small btn-danger delete-version" data-version="${ver}">Удалить</button></td>
+                       </tr>`;
         }
         html += `</tbody></table>`;
         return html;
@@ -1080,17 +1087,17 @@
         const lin = config.clientReqs.linux;
         return `
             <h4>Клиент Windows</h4>
-            <div class="admin-form-group"><label>Частота CPU (ГГц)</label><input type="number" step="0.1" id="win_cpu_freq" value="${win.cpu_freq_ghz}"><span class="helper-text">Минимальная тактовая частота процессора на рабочей станции.</span></div>
-            <div class="admin-form-group"><label>Оперативная память (ГБ)</label><input type="number" step="1" id="win_ram" value="${win.ram_gb}"><span class="helper-text">Минимальный объём ОЗУ.</span></div>
-            <div class="admin-form-group"><label>Сетевой адаптер (Мбит/с)</label><input type="number" step="10" id="win_net" value="${win.network_mbps}"><span class="helper-text">Пропускная способность сети.</span></div>
-            <div class="admin-form-group"><label>Операционная система</label><input type="text" id="win_os" value="${win.os}"><span class="helper-text">Список поддерживаемых версий Windows.</span></div>
-            <div class="admin-form-group"><label>Браузеры</label><input type="text" id="win_browsers" value="${win.browsers}"><span class="helper-text">Перечень браузеров, с которыми гарантированно работает веб-клиент.</span></div>
+            <div class="admin-form-group"><label>Частота CPU (ГГц)</label><input type="number" step="0.1" id="win_cpu_freq" value="${win.cpu_freq_ghz}"><span class="helper-text">Минимальная тактовая частота процессора на рабочей станции</span></div>
+            <div class="admin-form-group"><label>Оперативная память (ГБ)</label><input type="number" step="1" id="win_ram" value="${win.ram_gb}"><span class="helper-text">Минимальный объем ОЗУ</span></div>
+            <div class="admin-form-group"><label>Сетевой адаптер (Мбит/с)</label><input type="number" step="10" id="win_net" value="${win.network_mbps}"><span class="helper-text">Пропускная способность сети</span></div>
+            <div class="admin-form-group"><label>Операционная система</label><input type="text" id="win_os" value="${win.os}"><span class="helper-text">Список поддерживаемых версий Windows</span></div>
+            <div class="admin-form-group"><label>Браузеры</label><input type="text" id="win_browsers" value="${win.browsers}"><span class="helper-text">Перечень браузеров, с которыми гарантированно работает веб-клиент</span></div>
             <h4>Клиент Linux</h4>
-            <div class="admin-form-group"><label>Частота CPU (ГГц)</label><input type="number" step="0.1" id="lin_cpu_freq" value="${lin.cpu_freq_ghz}"></div>
-            <div class="admin-form-group"><label>Оперативная память (ГБ)</label><input type="number" step="1" id="lin_ram" value="${lin.ram_gb}"></div>
-            <div class="admin-form-group"><label>Сетевой адаптер (Мбит/с)</label><input type="number" step="10" id="lin_net" value="${lin.network_mbps}"></div>
-            <div class="admin-form-group"><label>Операционная система</label><input type="text" id="lin_os" value="${lin.os}"></div>
-            <div class="admin-form-group"><label>Браузеры</label><input type="text" id="lin_browsers" value="${lin.browsers}"></div>
+            <div class="admin-form-group"><label>Частота CPU (ГГц)</label><input type="number" step="0.1" id="lin_cpu_freq" value="${lin.cpu_freq_ghz}"><span class="helper-text">Минимальная тактовая частота процессора на рабочей станции</span></div>
+            <div class="admin-form-group"><label>Оперативная память (ГБ)</label><input type="number" step="1" id="lin_ram" value="${lin.ram_gb}"><span class="helper-text">Минимальный объем ОЗУ</span></div>
+            <div class="admin-form-group"><label>Сетевой адаптер (Мбит/с)</label><input type="number" step="10" id="lin_net" value="${lin.network_mbps}"><span class="helper-text">Пропускная способность сети</span></div>
+            <div class="admin-form-group"><label>Операционная система</label><input type="text" id="lin_os" value="${lin.os}"><span class="helper-text">Список поддерживаемых версий Linux</span></div>
+            <div class="admin-form-group"><label>Браузеры</label><input type="text" id="lin_browsers" value="${lin.browsers}"><span class="helper-text">Перечень браузеров, с которыми гарантированно работает веб-клиент</span></div>
         `;
     }
 
@@ -1100,10 +1107,10 @@
         config.subsystems.forEach((sub, idx) => {
             html += `<div class="admin-form-group" data-subsys-index="${idx}" style="border:1px solid #e2e8f0; padding:0.8rem; margin-bottom:0.8rem; border-radius:16px;">
                         <strong>${sub.name}</strong>
-                        <div><label>ID (уникальный)</label><input type="text" class="subsys-id" value="${sub.id}"></div>
+                        <div><label>Идентификатор подсистемы (ID)</label><input type="text" class="subsys-id" value="${sub.id}"></div>
                         <div><label>Название</label><input type="text" class="subsys-name" value="${sub.name}"></div>
                         <div><label>Требования (RAM, CPU ядра, CPU частота)</label><input type="text" class="subsys-reqs" value="${sub.requirements.server.ram_gb}, ${sub.requirements.server.cpu_cores}, ${sub.requirements.server.cpu_freq_ghz}"><span class="helper-text">Формат: число, число, число (например: 16, 4, 2.7)</span></div>
-                        <div><label>extraWarnings (каждая с новой строки)</label><textarea class="subsys-warnings" rows="3">${sub.extraWarnings.join('\n')}</textarea></div>
+                        <div><label>Дополнительные требования к подсистеме</label><textarea class="subsys-warnings" rows="3">${sub.extraWarnings.join('\n')}</textarea><span class="helper-text">Формат: каждое требование с новой строки</span></div>
                         <button class="btn-small btn-danger delete-subsystem" data-idx="${idx}">Удалить</button>
                     </div>`;
         });
@@ -1117,46 +1124,48 @@
         const ranges = s.diskFormula.ranges;
         return `
             <h4>Масштабирование оперативной памяти по документам</h4>
-            <div class="admin-form-group"><label>Базовый объём документов (млн)</label><input type="number" id="baseDocs" value="${s.baseDocsMillion}"><span class="helper-text">До этого количества документов не добавляется ОЗУ. Пример: 3</span></div>
-            <div class="admin-form-group"><label>Добавка RAM на каждые 3 млн документов (ГБ)</label><input type="number" id="ramPerExtra" value="${s.ramPerExtra3MillionGB}"><span class="helper-text">Сколько гигабайт ОЗУ добавлять за каждые 3 млн документов сверх базового. Пример: 4</span></div>
+            <div class="admin-form-group config-block"><label>Базовый объем документов (млн)</label><input type="number" id="baseDocs" value="${s.baseDocsMillion}"><span class="helper-text">До этого количества документов дополнительная RAM не добавляется. Пример: 3</span></div>
+            <div class="admin-form-group config-block"><label>Дополнительная RAM на каждые 3 млн (ГБ)</label><input type="number" id="ramPerExtra" value="${s.ramPerExtra3MillionGB}"><span class="helper-text">Количество гигабайт оперативной памяти, добавляемое за каждые 3 миллиона документов сверх базового уровня. Например, значение 4 означает +4 ГБ за каждые 3 млн</span></div>
             
             <h4>Коэффициент запаса при большом количестве подсистем</h4>
-            <div class="admin-form-group"><label>Порог количества подсистем</label><input type="number" id="subsysThresh" value="${s.subsystemCountThreshold}"><span class="helper-text">Если выбрано столько или больше подсистем, применяется запас. Пример: 5</span></div>
-            <div class="admin-form-group"><label>Множитель RAM</label><input type="number" step="0.01" id="subsysRamMult" value="${s.subsystemRamMultiplier}"><span class="helper-text">Например, 1.15 означает увеличение на 15%</span></div>
-            <div class="admin-form-group"><label>Множитель диска</label><input type="number" step="0.01" id="subsysDiskMult" value="${s.subsystemDiskMultiplier}"><span class="helper-text">Например, 1.10 означает увеличение на 10%</span></div>
+            <div class="admin-form-group config-block"><label>Порог количества подсистем</label><input type="number" id="subsysThresh" value="${s.subsystemCountThreshold}"><span class="helper-text">Если выбрано столько или больше подсистем, применяется запас. Пример: 5</span></div>
+            <div class="admin-form-group config-block"><label>Множитель RAM</label><input type="number" step="0.01" id="subsysRamMult" value="${s.subsystemRamMultiplier}"><span class="helper-text">Например, 1.15 означает увеличение минимальной RAM на 15%</span></div>
+            <div class="admin-form-group config-block"><label>Множитель диска</label><input type="number" step="0.01" id="subsysDiskMult" value="${s.subsystemDiskMultiplier}"><span class="helper-text">Например, 1.10 означает увеличение минимального диска на 10%</span></div>
             
             <h4>Градации нагрузки по пользователям</h4>
             <div id="tiersContainer">
-                ${tiers.map((t, i) => `<div style="border:1px solid #e2e8f0; padding:0.5rem; margin-bottom:0.5rem;">
-                    <label>Диапазон: от ${t.min} до ${t.max === null ? '∞' : t.max}</label>
+                ${tiers.map((t, i) => `<div class="config-block" data-tier-index="${i}" style="position:relative;">
+                    <button class="btn-small btn-danger remove-tier" style="position:absolute; top:0.5rem; right:0.5rem;">Удалить диапазон</button>
+                    <div><label>Минимальное количество пользователей (включительно)</label><input type="number" class="tier-min" value="${t.min}"></div>
+                    <div><label>Максимальное количество пользователей (включительно, оставьте пустым для ∞)</label><input type="number" class="tier-max" value="${t.max === null ? '' : t.max}"></div>
                     <div><label>Множитель RAM</label><input type="number" step="0.1" class="tier-ram-mult" value="${t.ramMultiplier}"><span class="helper-text">На сколько умножить ОЗУ (например, 1.5 = +50%)</span></div>
                     <div><label>Добавляемых ядер CPU</label><input type="number" class="tier-cores" value="${t.extraCores}"></div>
-                    <div><label>Целевая частота (ГГц, опционально)</label><input type="number" step="0.1" class="tier-freq" value="${t.targetFreq === null ? '' : t.targetFreq}"><span class="helper-text">Оставьте пустым, если не повышать.</span></div>
-                    <button class="btn-small btn-danger remove-tier" data-tier="${i}">Удалить диапазон</button>
+                    <div><label>Целевая частота (ГГц, опционально)</label><input type="number" step="0.1" class="tier-freq" value="${t.targetFreq === null ? '' : t.targetFreq}"><span class="helper-text">Оставьте пустым, если не повышать</span></div>
                 </div>`).join('')}
             </div>
             <button id="addTierBtn" class="btn-small">+ Добавить диапазон</button>
             
             <h4>Формула дискового пространства (нелинейная)</h4>
             <div id="diskRangesContainer">
-                ${ranges.map((r, i) => `<div style="border:1px solid #e2e8f0; padding:0.5rem; margin-bottom:0.5rem;">
-                    <label>Макс. млн документов (пусто = ∞)</label><input type="number" class="range-max" value="${r.max === null ? '' : r.max}">
-                    <label>Коэффициент (ГБ на млн)</label><input type="number" step="0.1" class="range-coeff" value="${r.coeff}">
-                    <label>Доп. запас (ГБ)</label><input type="number" class="range-extra" value="${r.extra}">
-                    <button class="btn-small btn-danger remove-range" data-range="${i}">Удалить диапазон</button>
+                ${ranges.map((r, i) => `<div class="config-block" data-range-index="${i}" style="position:relative;">
+                    <button class="btn-small btn-danger remove-range" style="position:absolute; top:0.5rem; right:0.5rem;">Удалить диапазон</button>
+                    <div><label>Максимальный объем документов (млн, пусто = ∞)</label><input type="number" class="range-max" value="${r.max === null ? '' : r.max}"></div>
+                    <div><label>Коэффициент (ГБ на млн)</label><input type="number" step="0.1" class="range-coeff" value="${r.coeff}"><span class="helper-text">Сколько ГБ добавлять на каждый миллион в этом диапазоне</span></div>
+                    <div><label>Дополнительный фиксированный запас (ГБ)</label><input type="number" class="range-extra" value="${r.extra}"><span class="helper-text">Постоянная добавка для этого диапазона (обычно 0, кроме последнего)</span></div>
                 </div>`).join('')}
             </div>
             <button id="addRangeBtn" class="btn-small">+ Добавить диапазон</button>
-            <div class="admin-form-group"><label>Рекомендуемый диск: добавка к минимальному (ГБ)</label><input type="number" id="diskPadding" value="${s.diskRecommendedPadding}"><span class="helper-text">Например, 30 ГБ запаса сверх минимального.</span></div>
+            <div class="admin-form-group config-block"><label>Рекомендуемый диск: добавка к минимальному (ГБ)</label><input type="number" id="diskPadding" value="${s.diskRecommendedPadding}"><span class="helper-text">Запас сверх минимального расчетного объема. Пример: 30</span></div>
             
             <h4>Режим «Только Справочная система»</h4>
-            <div class="admin-form-group"><label>RAM (ГБ)</label><input type="number" id="refRam" value="${s.referenceModeFactor.ram_gb}"></div>
-            <div class="admin-form-group"><label>CPU ядер</label><input type="number" id="refCores" value="${s.referenceModeFactor.cpu_cores}"></div>
-            <div class="admin-form-group"><label>CPU частота (ГГц)</label><input type="number" step="0.1" id="refFreq" value="${s.referenceModeFactor.cpu_freq_ghz}"></div>
+            <div class="admin-form-group config-block"><label>RAM (ГБ)</label><input type="number" id="refRam" value="${s.referenceModeFactor.ram_gb}"><span class="helper-text">Объем оперативной памяти при выборе облегченного режима</span></div>
+            <div class="admin-form-group config-block"><label>CPU ядер</label><input type="number" id="refCores" value="${s.referenceModeFactor.cpu_cores}"><span class="helper-text">Количество ядер для облегченного режима</span></div>
+            <div class="admin-form-group config-block"><label>CPU частота (ГГц)</label><input type="number" step="0.1" id="refFreq" value="${s.referenceModeFactor.cpu_freq_ghz}"><span class="helper-text">Тактовая частота для облегченного режима</span></div>
         `;
     }
 
     function attachAdminEventListeners() {
+        // Версии платформы
         document.querySelectorAll('.copy-version').forEach(btn => {
             btn.onclick = () => {
                 const ver = btn.dataset.version;
@@ -1184,9 +1193,10 @@
                 renderAdminPanel();
             }
         };
+        // Подсистемы
         const addSubsystemBtn = document.getElementById('addSubsystemBtn');
         if (addSubsystemBtn) addSubsystemBtn.onclick = () => {
-            const newId = prompt('Введите ID подсистемы (уникальный)');
+            const newId = prompt('Введите идентификатор подсистемы (ID)');
             if (newId && !config.subsystems.find(s => s.id === newId)) {
                 config.subsystems.push({
                     id: newId,
@@ -1206,12 +1216,51 @@
                 }
             };
         });
-        // Для масштабирования – добавление/удаление диапазонов и сохранение через общий save
+        // Градации пользователей: добавление и удаление
+        const addTierBtn = document.getElementById('addTierBtn');
+        if (addTierBtn) {
+            addTierBtn.onclick = () => {
+                config.scaling.userTiers.push({ min: 1, max: null, ramMultiplier: 1.0, extraCores: 0, targetFreq: null });
+                renderScalingTab(); // перерисовываем только вкладку масштабирования
+                // после перерисовки нужно заново привязать обработчики (вызывается внутри renderAdminPanel)
+            };
+        }
+        const removeTierBtns = document.querySelectorAll('.remove-tier');
+        removeTierBtns.forEach(btn => {
+            btn.onclick = () => {
+                const idx = parseInt(btn.closest('.config-block').dataset.tierIndex);
+                if (!isNaN(idx) && config.scaling.userTiers.length > 1) {
+                    config.scaling.userTiers.splice(idx, 1);
+                    renderScalingTab();
+                } else if (config.scaling.userTiers.length === 1) {
+                    alert('Должен остаться хотя бы один диапазон');
+                }
+            };
+        });
+        // Диапазоны диска: добавление и удаление
+        const addRangeBtn = document.getElementById('addRangeBtn');
+        if (addRangeBtn) {
+            addRangeBtn.onclick = () => {
+                config.scaling.diskFormula.ranges.push({ max: null, coeff: 1.0, extra: 0 });
+                renderScalingTab();
+            };
+        }
+        const removeRangeBtns = document.querySelectorAll('.remove-range');
+        removeRangeBtns.forEach(btn => {
+            btn.onclick = () => {
+                const idx = parseInt(btn.closest('.config-block').dataset.rangeIndex);
+                if (!isNaN(idx) && config.scaling.diskFormula.ranges.length > 1) {
+                    config.scaling.diskFormula.ranges.splice(idx, 1);
+                    renderScalingTab();
+                } else if (config.scaling.diskFormula.ranges.length === 1) {
+                    alert('Должен остаться хотя бы один диапазон');
+                }
+            };
+        });
     }
 
     function collectAdminData() {
-        // Сохраняем изменения из вкладок, которые есть на экране
-        // Платформы
+        // Сохраняем версии платформы
         const versionRows = document.querySelectorAll('#modalBody table tbody tr');
         if (versionRows.length) {
             versionRows.forEach(row => {
@@ -1268,18 +1317,21 @@
             config.scaling.subsystemCountThreshold = parseInt(document.getElementById('subsysThresh').value);
             config.scaling.subsystemRamMultiplier = parseFloat(document.getElementById('subsysRamMult').value);
             config.scaling.subsystemDiskMultiplier = parseFloat(document.getElementById('subsysDiskMult').value);
-            // Градации пользователей
-            const tierDivs = document.querySelectorAll('#tiersContainer > div');
+            // Сбор градаций пользователей
+            const tierDivs = document.querySelectorAll('#tiersContainer .config-block');
             let newTiers = [];
             tierDivs.forEach(div => {
+                const min = parseInt(div.querySelector('.tier-min').value);
+                let max = div.querySelector('.tier-max').value;
+                max = (max === '') ? null : parseInt(max);
                 const ramMult = parseFloat(div.querySelector('.tier-ram-mult').value);
                 const cores = parseInt(div.querySelector('.tier-cores').value);
                 const freq = parseFloat(div.querySelector('.tier-freq').value) || null;
-                // Границы не редактируются в этом интерфейсе, оставляем старые или можно добавить поля – для простоты оставим как есть
-                // В демо версии используем текущие границы, которые были при загрузке. При добавлении нового диапазона границы нужно задавать.
+                newTiers.push({ min, max, ramMultiplier: ramMult, extraCores: cores, targetFreq: freq });
             });
-            // Дисковые диапазоны
-            const rangeDivs = document.querySelectorAll('#diskRangesContainer > div');
+            config.scaling.userTiers = newTiers;
+            // Сбор диапазонов диска
+            const rangeDivs = document.querySelectorAll('#diskRangesContainer .config-block');
             let newRanges = [];
             rangeDivs.forEach(div => {
                 let max = div.querySelector('.range-max').value;
@@ -1337,7 +1389,6 @@
         input.click();
     };
 
-    // Переключение вкладок
     document.querySelectorAll('.modal-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));

@@ -381,7 +381,6 @@
             color: #64748b;
             margin-top: 0.2rem;
         }
-        /* Чередование фона для блоков в масштабировании */
         .config-block {
             padding: 0.8rem;
             margin-bottom: 1rem;
@@ -398,6 +397,10 @@
             padding: 0.8rem;
             margin-bottom: 1.5rem;
             border-radius: 16px;
+        }
+        .readonly-field {
+            background-color: #f1f5f9;
+            cursor: default;
         }
         @media (max-width: 780px) {
             .card {
@@ -494,7 +497,7 @@
                 <div class="client-os-section">
                     <h4 style="margin:0 0 8px 0">⊞ Windows (64‑bit)</h4>
                     <table class="result-table" id="clientWindowsTable">
-                        <thead><tr><th>Параметр</th><th>Требования</th><tr></thead>
+                        <thead><tr><th>Параметр</th><th>Требования</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -1048,6 +1051,7 @@
     const adminBtn = document.getElementById('adminBtn');
     const modal = document.getElementById('adminModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
+    const modalBody = document.getElementById('modalBody');
 
     function openModal() { modal.style.display = 'flex'; renderAdminPanel(); }
     function closeModal() { modal.style.display = 'none'; }
@@ -1057,17 +1061,16 @@
 
     function renderAdminPanel() {
         const activeTab = document.querySelector('.modal-tab.active').dataset.tab;
-        const body = document.getElementById('modalBody');
         if (activeTab === 'platform') {
-            body.innerHTML = renderPlatformTab();
+            modalBody.innerHTML = renderPlatformTab();
         } else if (activeTab === 'client') {
-            body.innerHTML = renderClientTab();
+            modalBody.innerHTML = renderClientTab();
         } else if (activeTab === 'subsystems') {
-            body.innerHTML = renderSubsystemsTab();
+            modalBody.innerHTML = renderSubsystemsTab();
         } else if (activeTab === 'scaling') {
-            body.innerHTML = renderScalingTab();
+            modalBody.innerHTML = renderScalingTab();
         }
-        attachAdminEventListeners();
+        attachGlobalDelegation();
     }
 
     function renderPlatformTab() {
@@ -1132,8 +1135,8 @@
         return `
             <div class="static-highlight">
                 <strong>📌 Глобальные правила (не зависят от нагрузки)</strong><br>
-                <div class="admin-form-group"><label>Базовый объем документов (млн)</label><input type="number" id="baseDocs" value="${s.baseDocsMillion}"><span class="helper-text">До этого количества документов дополнительная RAM не добавляется. Пример: значение 3 означает, что при 2 млн документов RAM не увеличивается, а при 5 млн — увеличивается</span></div>
-                <div class="admin-form-group"><label>Дополнительная RAM на каждые 3 млн (ГБ)</label><input type="number" id="ramPerExtra" value="${s.ramPerExtra3MillionGB}"><span class="helper-text">Сколько гигабайт RAM добавляется за каждые 3 млн документов сверх базового уровня. Например, значение 4: при 6 млн документов (3 млн сверх базы) добавится +4 ГБ, при 9 млн — +8 ГБ</span></div>
+                <div class="admin-form-group"><label>Базовый объем документов (млн)</label><input type="number" id="baseDocs" value="${s.baseDocsMillion}" readonly class="readonly-field"><span class="helper-text">До этого количества документов дополнительная RAM не добавляется. Пример: значение 3 означает, что при 2 млн документов RAM не увеличивается, а при 5 млн — увеличивается</span></div>
+                <div class="admin-form-group"><label>Дополнительная RAM на каждые 3 млн (ГБ)</label><input type="number" id="ramPerExtra" value="${s.ramPerExtra3MillionGB}" readonly class="readonly-field"><span class="helper-text">Сколько гигабайт RAM добавляется за каждые 3 млн документов сверх базового уровня. Например, значение 4: при 6 млн документов (3 млн сверх базы) добавится +4 ГБ, при 9 млн — +8 ГБ</span></div>
             </div>
             
             <h4>Коэффициент резервирования при большом количестве подсистем</h4>
@@ -1173,38 +1176,39 @@
         `;
     }
 
-    function attachAdminEventListeners() {
-        // Версии платформы
-        document.querySelectorAll('.copy-version').forEach(btn => {
-            btn.onclick = () => {
-                const ver = btn.dataset.version;
-                const newVer = prompt('Введите название новой версии (например, 6.5.0)');
-                if (newVer && !config.platformReqs[newVer]) {
-                    config.platformReqs[newVer] = JSON.parse(JSON.stringify(config.platformReqs[ver]));
-                    renderAdminPanel();
-                } else alert('Версия уже существует или имя не задано');
-            };
-        });
-        document.querySelectorAll('.delete-version').forEach(btn => {
-            btn.onclick = () => {
-                const ver = btn.dataset.version;
-                if (ver !== '6.4.5' && ver !== '6.4.6' && confirm(`Удалить версию ${ver}?`)) {
-                    delete config.platformReqs[ver];
-                    renderAdminPanel();
-                } else alert('Нельзя удалить базовые версии');
-            };
-        });
-        const addPlatformBtn = document.getElementById('addPlatformBtn');
-        if (addPlatformBtn) addPlatformBtn.onclick = () => {
+    function attachGlobalDelegation() {
+        // Удаляем старые обработчики, чтобы не дублировать, но делегирование на modalBody
+        modalBody.removeEventListener('click', handleModalClick);
+        modalBody.addEventListener('click', handleModalClick);
+    }
+
+    function handleModalClick(e) {
+        const target = e.target;
+        // Кнопки версий
+        if (target.classList.contains('copy-version')) {
+            const ver = target.dataset.version;
+            const newVer = prompt('Введите название новой версии (например, 6.5.0)');
+            if (newVer && !config.platformReqs[newVer]) {
+                config.platformReqs[newVer] = JSON.parse(JSON.stringify(config.platformReqs[ver]));
+                renderAdminPanel();
+            } else if (!newVer) {} else alert('Версия уже существует');
+        }
+        else if (target.classList.contains('delete-version')) {
+            const ver = target.dataset.version;
+            if (ver !== '6.4.5' && ver !== '6.4.6' && confirm(`Удалить версию ${ver}?`)) {
+                delete config.platformReqs[ver];
+                renderAdminPanel();
+            } else if (ver === '6.4.5' || ver === '6.4.6') alert('Нельзя удалить базовые версии');
+        }
+        else if (target.id === 'addPlatformBtn') {
             const newVer = prompt('Название версии (например, 6.5.0)');
             if (newVer && !config.platformReqs[newVer]) {
                 config.platformReqs[newVer] = JSON.parse(JSON.stringify(config.platformReqs['6.4.5']));
                 renderAdminPanel();
-            }
-        };
+            } else if (newVer) alert('Версия уже существует');
+        }
         // Подсистемы
-        const addSubsystemBtn = document.getElementById('addSubsystemBtn');
-        if (addSubsystemBtn) addSubsystemBtn.onclick = () => {
+        else if (target.id === 'addSubsystemBtn') {
             const newId = prompt('Введите идентификатор подсистемы (ID)');
             if (newId && !config.subsystems.find(s => s.id === newId)) {
                 config.subsystems.push({
@@ -1214,61 +1218,45 @@
                     extraWarnings: []
                 });
                 renderAdminPanel();
-            }
-        };
-        document.querySelectorAll('.delete-subsystem').forEach(btn => {
-            btn.onclick = () => {
-                const idx = parseInt(btn.dataset.idx);
-                if (confirm('Удалить подсистему?')) {
-                    config.subsystems.splice(idx, 1);
-                    renderAdminPanel();
-                }
-            };
-        });
-        // Градации пользователей: добавление и удаление
-        const addTierBtn = document.getElementById('addTierBtn');
-        if (addTierBtn) {
-            addTierBtn.onclick = () => {
-                config.scaling.userTiers.push({ min: 1, max: null, ramMultiplier: 1.0, extraCores: 0, targetFreq: null });
-                renderScalingTab();
-                attachAdminEventListeners(); // перепривязываем обработчики после обновления
-            };
+            } else if (newId) alert('ID уже существует');
         }
-        const removeTierBtns = document.querySelectorAll('.remove-tier');
-        removeTierBtns.forEach(btn => {
-            btn.onclick = () => {
-                const idx = parseInt(btn.closest('.config-block').dataset.tierIndex);
+        else if (target.classList.contains('delete-subsystem')) {
+            const idx = parseInt(target.dataset.idx);
+            if (confirm('Удалить подсистему?')) {
+                config.subsystems.splice(idx, 1);
+                renderAdminPanel();
+            }
+        }
+        // Градации пользователей
+        else if (target.id === 'addTierBtn') {
+            config.scaling.userTiers.push({ min: 1, max: null, ramMultiplier: 1.0, extraCores: 0, targetFreq: null });
+            renderAdminPanel();
+        }
+        else if (target.classList.contains('remove-tier')) {
+            const block = target.closest('.config-block');
+            if (block) {
+                const idx = parseInt(block.dataset.tierIndex);
                 if (!isNaN(idx) && config.scaling.userTiers.length > 1) {
                     config.scaling.userTiers.splice(idx, 1);
-                    renderScalingTab();
-                    attachAdminEventListeners();
-                } else if (config.scaling.userTiers.length === 1) {
-                    alert('Должен остаться хотя бы один диапазон');
-                }
-            };
-        });
-        // Диапазоны диска: добавление и удаление
-        const addRangeBtn = document.getElementById('addRangeBtn');
-        if (addRangeBtn) {
-            addRangeBtn.onclick = () => {
-                config.scaling.diskFormula.ranges.push({ max: null, coeff: 1.0, extra: 0 });
-                renderScalingTab();
-                attachAdminEventListeners();
-            };
+                    renderAdminPanel();
+                } else if (config.scaling.userTiers.length === 1) alert('Должен остаться хотя бы один диапазон');
+            }
         }
-        const removeRangeBtns = document.querySelectorAll('.remove-range');
-        removeRangeBtns.forEach(btn => {
-            btn.onclick = () => {
-                const idx = parseInt(btn.closest('.config-block').dataset.rangeIndex);
+        // Диапазоны диска
+        else if (target.id === 'addRangeBtn') {
+            config.scaling.diskFormula.ranges.push({ max: null, coeff: 1.0, extra: 0 });
+            renderAdminPanel();
+        }
+        else if (target.classList.contains('remove-range')) {
+            const block = target.closest('.config-block');
+            if (block) {
+                const idx = parseInt(block.dataset.rangeIndex);
                 if (!isNaN(idx) && config.scaling.diskFormula.ranges.length > 1) {
                     config.scaling.diskFormula.ranges.splice(idx, 1);
-                    renderScalingTab();
-                    attachAdminEventListeners();
-                } else if (config.scaling.diskFormula.ranges.length === 1) {
-                    alert('Должен остаться хотя бы один диапазон');
-                }
-            };
-        });
+                    renderAdminPanel();
+                } else if (config.scaling.diskFormula.ranges.length === 1) alert('Должен остаться хотя бы один диапазон');
+            }
+        }
     }
 
     function collectAdminData() {
@@ -1329,7 +1317,7 @@
             config.scaling.subsystemCountThreshold = parseInt(document.getElementById('subsysThresh').value);
             config.scaling.subsystemRamMultiplier = parseFloat(document.getElementById('subsysRamMult').value);
             config.scaling.subsystemDiskMultiplier = parseFloat(document.getElementById('subsysDiskMult').value);
-            // Сбор градаций пользователей
+            // Градации пользователей
             const tierDivs = document.querySelectorAll('#tiersContainer .config-block');
             let newTiers = [];
             tierDivs.forEach(div => {
@@ -1342,7 +1330,7 @@
                 newTiers.push({ min, max, ramMultiplier: ramMult, extraCores: cores, targetFreq: freq });
             });
             config.scaling.userTiers = newTiers;
-            // Сбор диапазонов диска
+            // Дисковые диапазоны
             const rangeDivs = document.querySelectorAll('#diskRangesContainer .config-block');
             let newRanges = [];
             rangeDivs.forEach(div => {

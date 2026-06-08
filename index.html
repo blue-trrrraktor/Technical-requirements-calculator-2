@@ -1358,7 +1358,6 @@
             };
         }
     }
-
     document.getElementById('saveConfigBtn').onclick = () => {
         collectAdminData();
         saveConfig();
@@ -1379,24 +1378,7 @@
         a.click();
         URL.revokeObjectURL(url);
     };
-    document.getElementById('importConfigBtn').onclick = () => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'application/json';
-        input.onchange = e => {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = ev => {
-                try {
-                    const imported = JSON.parse(ev.target.result);
-                    config = deepMerge(DEFAULT_CONFIG, imported);
-                    saveConfig();
-                } catch(err) { alert('Ошибка импорта'); }
-            };
-            reader.readAsText(file);
-        };
-        input.click();
-    };
+ 
 
     document.querySelectorAll('.modal-tab').forEach(tab => {
         tab.addEventListener('click', () => {

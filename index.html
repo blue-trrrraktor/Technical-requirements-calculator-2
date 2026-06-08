@@ -440,7 +440,7 @@
         <h2>📋 Результат расчета</h2>
         <div class="two-cols">
             <div class="col"><h3>🖥️ Серверная часть</h3><table class="result-table" id="serverTable"><thead><tr><th>Параметр</th><th>Минимальные требования</th><th>Рекомендуемые</th></tr></thead><tbody></tbody></table><div id="serverExtraNote" class="note" style="margin-top: 8px;"></div></div>
-            <div class="col"><h3>🖱️ Клиентская часть</h3><div class="client-os-section"><h4 style="margin:0 0 8px 0">⊞ Windows (64‑bit)</h4><table class="result-table" id="clientWindowsTable"><thead><tr><th>Параметр</th><th>Требования</th><tr></thead><tbody></tbody></table></div><div class="client-os-section"><h4 style="margin:0 0 8px 0">🐧 Linux</h4><table class="result-table" id="clientLinuxTable"><thead><tr><th>Параметр</th><th>Требования</th></tr></thead><tbody></tbody></table></div><div class="note">Клиентские требования не зависят от нагрузки и одинаковы для всех версий Платформы.<br>Для браузеров необходима поддержка JavaScript, cookies, всплывающих окон. Используйте последние стабильные версии.</div></div>
+            <div class="col"><h3>🖱️ Клиентская часть</h3><div class="client-os-section"><h4 style="margin:0 0 8px 0">⊞ Windows (64‑bit)</h4><table class="result-table" id="clientWindowsTable"><thead><tr><th>Параметр</th><th>Требования</th></tr></thead><tbody></tbody></table></div><div class="client-os-section"><h4 style="margin:0 0 8px 0">🐧 Linux</h4><table class="result-table" id="clientLinuxTable"><thead><tr><th>Параметр</th><th>Требования</th></tr></thead><tbody></tbody></table></div><div class="note">Клиентские требования не зависят от нагрузки и одинаковы для всех версий Платформы.<br>Для браузеров необходима поддержка JavaScript, cookies, всплывающих окон. Используйте последние стабильные версии.</div></div>
         </div>
         <div id="warningsArea" style="margin-top: 1.5rem; background: #fff7e6; padding: 1rem; border-radius: 20px;"></div>
         <div id="subsystemsDetailsBlock" class="subsystems-details" style="display: none;"><div class="subsystems-details-header" id="subsystemsDetailsHeader"><span>📌 Дополнительные требования выбранных подсистем</span><span>▼</span></div><div class="subsystems-details-content" id="subsystemsDetailsContent"></div></div>
@@ -609,7 +609,7 @@
             { param: "Операционная система", minVal: `64-разрядная: Windows Server 2012/2016/2019/2022/2025 или Linux (ядро 3.0+ / Астра / Альт / РЕД / Атлант)`, recVal: `—` },
             { param: "Настройки энергопотребления", minVal: "BIOS: макс. производительность; ОС: план «Высокая производительность»", recVal: isVirtual ? "Хост + гость — одинаковый план макс. производительности" : "—" }
         ];
-        rows.forEach(r => { let tr = document.createElement('tr'); tr.innerHTML = `<td><strong>${r.param}</strong><td>${r.minVal}</td><td>${r.recVal}</td>`; tbody.appendChild(tr); });
+        rows.forEach(r => { let tr = document.createElement('tr'); tr.innerHTML = `<td><strong>${r.param}</strong><td>${r.minVal}</td><td>${r.recVal}</table>`; tbody.appendChild(tr); });
     }
 
     function renderClientTables(winReqs, linReqs) {
@@ -951,29 +951,23 @@
     document.getElementById('saveConfigBtn').onclick = () => { collectAdminData(); saveConfig(); };
     document.getElementById('resetConfigBtn').onclick = () => { if (confirm('Вернуть все исходные значения?')) { localStorage.removeItem('suntd_calculator_config'); location.reload(); } };
     document.getElementById('exportConfigBtn').onclick = () => { let dataStr = JSON.stringify(config, null, 2); let blob = new Blob([dataStr], {type:'application/json'}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = 'calculator_config.json'; a.click(); URL.revokeObjectURL(url); };
-    document.getElementById('importConfigBtn').onclick = () => {
+    document.getElementById('importConfigBtn').onclick = async () => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'application/json';
-        input.onchange = e => {
+        input.onchange = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            const reader = new FileReader();
-            reader.onload = ev => {
-                try {
-                    let content = ev.target.result;
-                    if (typeof content !== 'string') throw new Error('Не удалось прочитать файл как текст');
-                    if (content.charCodeAt(0) === 0xFEFF) content = content.slice(1);
-                    const imported = JSON.parse(content);
-                    config = deepMerge(DEFAULT_CONFIG, imported);
-                    saveConfig();
-                } catch(err) {
-                    console.error(err);
-                    alert(`Ошибка импорта: ${err.message}\nПроверьте JSON на синтаксические ошибки.\nПодробности в консоли (F12).`);
-                }
-            };
-            reader.onerror = () => alert('Ошибка чтения файла');
-            reader.readAsText(file, 'UTF-8');
+            try {
+                let content = await file.text();
+                if (content.charCodeAt(0) === 0xFEFF) content = content.slice(1);
+                const imported = JSON.parse(content);
+                config = deepMerge(DEFAULT_CONFIG, imported);
+                saveConfig();
+            } catch (err) {
+                console.error(err);
+                alert(`Ошибка импорта: ${err.message}\nПроверьте JSON на синтаксические ошибки.\nПодробности в консоли (F12).`);
+            }
         };
         input.click();
     };

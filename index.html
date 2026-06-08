@@ -392,6 +392,13 @@
             background: #ffffff;
             border: 1px solid #e2e8f0;
         }
+        .static-highlight {
+            background: #fef9c3;
+            border-left: 6px solid #eab308;
+            padding: 0.8rem;
+            margin-bottom: 1.5rem;
+            border-radius: 16px;
+        }
         @media (max-width: 780px) {
             .card {
                 padding: 1.2rem;
@@ -487,7 +494,7 @@
                 <div class="client-os-section">
                     <h4 style="margin:0 0 8px 0">⊞ Windows (64‑bit)</h4>
                     <table class="result-table" id="clientWindowsTable">
-                        <thead><tr><th>Параметр</th><th>Требования</th></tr></thead>
+                        <thead><tr><th>Параметр</th><th>Требования</th><tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -940,7 +947,7 @@
             warningsList.push("⚠️ Подсистема «кАссист 4» на сервере может работать под Windows, но клиентская часть ориентирована только на Linux. Убедитесь в совместимости.");
         }
         if (subsystemCount >= config.scaling.subsystemCountThreshold) {
-            warningsList.push(`🔧 Выбрано ${subsystemCount} подсистем. Применен коэффициент запаса: RAM +${Math.round((config.scaling.subsystemRamMultiplier-1)*100)}%, диск +${Math.round((config.scaling.subsystemDiskMultiplier-1)*100)}% к минимальным требованиям.`);
+            warningsList.push(`🔧 Выбрано ${subsystemCount} подсистем. Применен коэффициент резервирования: RAM +${Math.round((config.scaling.subsystemRamMultiplier-1)*100)}%, диск +${Math.round((config.scaling.subsystemDiskMultiplier-1)*100)}% к минимальным требованиям.`);
         }
 
         renderServerTable(serverReqs, finalRamMin, diskMin, recommendedServer, diskRecommended, isVirtual);
@@ -969,7 +976,7 @@
         scalingNote.innerHTML = `
             <strong>📐 Примечания по расчету:</strong><br>
             • Базовые требования сервера (минимальные): ${serverReqs.cpu_cores} ядер / ${serverReqs.cpu_freq_ghz} ГГц, ОЗУ ${serverReqs.ram_gb} ГБ (до масштабирования по документам и пользователям).<br>
-            • Диск: минимальный свободный объем ${diskMin} ГБ (с учетом запаса). Рекомендуется SSD.<br>
+            • Диск: минимальный свободный объем ${diskMin} ГБ (с учетом резервирования). Рекомендуется SSD.<br>
             • ${deployMode === 'reference' ? 'Режим "Только Справочная система" понижает базовые требования (ОЗУ 8 ГБ, 2 ядра).' : 'Полный контур СУНТД — штатные требования 16 ГБ/4 ядра.'}<br>
             • Для корректной работы обязательно соблюдать настройки энергопотребления (BIOS/ОС) и при виртуализации размещать БД локально.
         `;
@@ -1037,7 +1044,7 @@
     loadConfig();
     setTimeout(() => calculateWithoutScroll(), 100);
 
-    // ----- Административная панель (полностью переработанная) -----
+    // ----- Административная панель -----
     const adminBtn = document.getElementById('adminBtn');
     const modal = document.getElementById('adminModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
@@ -1123,14 +1130,16 @@
         const tiers = s.userTiers;
         const ranges = s.diskFormula.ranges;
         return `
-            <h4>Масштабирование оперативной памяти по документам</h4>
-            <div class="admin-form-group config-block"><label>Базовый объем документов (млн)</label><input type="number" id="baseDocs" value="${s.baseDocsMillion}"><span class="helper-text">До этого количества документов дополнительная RAM не добавляется. Пример: 3</span></div>
-            <div class="admin-form-group config-block"><label>Дополнительная RAM на каждые 3 млн (ГБ)</label><input type="number" id="ramPerExtra" value="${s.ramPerExtra3MillionGB}"><span class="helper-text">Количество гигабайт оперативной памяти, добавляемое за каждые 3 миллиона документов сверх базового уровня. Например, значение 4 означает +4 ГБ за каждые 3 млн</span></div>
+            <div class="static-highlight">
+                <strong>📌 Глобальные правила (не зависят от нагрузки)</strong><br>
+                <div class="admin-form-group"><label>Базовый объем документов (млн)</label><input type="number" id="baseDocs" value="${s.baseDocsMillion}"><span class="helper-text">До этого количества документов дополнительная RAM не добавляется. Пример: значение 3 означает, что при 2 млн документов RAM не увеличивается, а при 5 млн — увеличивается</span></div>
+                <div class="admin-form-group"><label>Дополнительная RAM на каждые 3 млн (ГБ)</label><input type="number" id="ramPerExtra" value="${s.ramPerExtra3MillionGB}"><span class="helper-text">Сколько гигабайт RAM добавляется за каждые 3 млн документов сверх базового уровня. Например, значение 4: при 6 млн документов (3 млн сверх базы) добавится +4 ГБ, при 9 млн — +8 ГБ</span></div>
+            </div>
             
-            <h4>Коэффициент запаса при большом количестве подсистем</h4>
-            <div class="admin-form-group config-block"><label>Порог количества подсистем</label><input type="number" id="subsysThresh" value="${s.subsystemCountThreshold}"><span class="helper-text">Если выбрано столько или больше подсистем, применяется запас. Пример: 5</span></div>
-            <div class="admin-form-group config-block"><label>Множитель RAM</label><input type="number" step="0.01" id="subsysRamMult" value="${s.subsystemRamMultiplier}"><span class="helper-text">Например, 1.15 означает увеличение минимальной RAM на 15%</span></div>
-            <div class="admin-form-group config-block"><label>Множитель диска</label><input type="number" step="0.01" id="subsysDiskMult" value="${s.subsystemDiskMultiplier}"><span class="helper-text">Например, 1.10 означает увеличение минимального диска на 10%</span></div>
+            <h4>Коэффициент резервирования при большом количестве подсистем</h4>
+            <div class="admin-form-group config-block"><label>Порог количества подсистем</label><input type="number" id="subsysThresh" value="${s.subsystemCountThreshold}"><span class="helper-text">Если выбрано столько или больше подсистем (включая те, что не повышают требования), то к минимальным значениям RAM и диска применяются коэффициенты резервирования. Пример: 5</span></div>
+            <div class="admin-form-group config-block"><label>Множитель RAM</label><input type="number" step="0.01" id="subsysRamMult" value="${s.subsystemRamMultiplier}"><span class="helper-text">Множитель для оперативной памяти при превышении порога. Пример: 1,15 означает увеличение минимальной RAM на 15% (например, с 16 ГБ до 18,4 ГБ → округление)</span></div>
+            <div class="admin-form-group config-block"><label>Множитель диска</label><input type="number" step="0.01" id="subsysDiskMult" value="${s.subsystemDiskMultiplier}"><span class="helper-text">Множитель для дискового пространства при превышении порога. Пример: 1,10 означает увеличение минимального диска на 10% (например, с 50 ГБ до 55 ГБ)</span></div>
             
             <h4>Градации нагрузки по пользователям</h4>
             <div id="tiersContainer">
@@ -1138,9 +1147,9 @@
                     <button class="btn-small btn-danger remove-tier" style="position:absolute; top:0.5rem; right:0.5rem;">Удалить диапазон</button>
                     <div><label>Минимальное количество пользователей (включительно)</label><input type="number" class="tier-min" value="${t.min}"></div>
                     <div><label>Максимальное количество пользователей (включительно, оставьте пустым для ∞)</label><input type="number" class="tier-max" value="${t.max === null ? '' : t.max}"></div>
-                    <div><label>Множитель RAM</label><input type="number" step="0.1" class="tier-ram-mult" value="${t.ramMultiplier}"><span class="helper-text">На сколько умножить ОЗУ (например, 1.5 = +50%)</span></div>
-                    <div><label>Добавляемых ядер CPU</label><input type="number" class="tier-cores" value="${t.extraCores}"></div>
-                    <div><label>Целевая частота (ГГц, опционально)</label><input type="number" step="0.1" class="tier-freq" value="${t.targetFreq === null ? '' : t.targetFreq}"><span class="helper-text">Оставьте пустым, если не повышать</span></div>
+                    <div><label>Множитель RAM</label><input type="number" step="0.1" class="tier-ram-mult" value="${t.ramMultiplier}"><span class="helper-text">Коэффициент, на который умножается уже рассчитанная RAM для этого диапазона пользователей. Пример: 1,5 означает увеличение на 50% (RAM 20 ГБ → 30 ГБ)</span></div>
+                    <div><label>Добавляемых ядер CPU</label><input type="number" class="tier-cores" value="${t.extraCores}"><span class="helper-text">Сколько ядер процессора добавить к базовому количеству (из Платформы или подсистем). Пример: 4</span></div>
+                    <div><label>Целевая частота (ГГц, опционально)</label><input type="number" step="0.1" class="tier-freq" value="${t.targetFreq === null ? '' : t.targetFreq}"><span class="helper-text">Если указано, частота процессора будет повышена до этого значения (если исходная была ниже). Оставьте пустым, если не требуется</span></div>
                 </div>`).join('')}
             </div>
             <button id="addTierBtn" class="btn-small">+ Добавить диапазон</button>
@@ -1149,16 +1158,16 @@
             <div id="diskRangesContainer">
                 ${ranges.map((r, i) => `<div class="config-block" data-range-index="${i}" style="position:relative;">
                     <button class="btn-small btn-danger remove-range" style="position:absolute; top:0.5rem; right:0.5rem;">Удалить диапазон</button>
-                    <div><label>Максимальный объем документов (млн, пусто = ∞)</label><input type="number" class="range-max" value="${r.max === null ? '' : r.max}"></div>
-                    <div><label>Коэффициент (ГБ на млн)</label><input type="number" step="0.1" class="range-coeff" value="${r.coeff}"><span class="helper-text">Сколько ГБ добавлять на каждый миллион в этом диапазоне</span></div>
-                    <div><label>Дополнительный фиксированный запас (ГБ)</label><input type="number" class="range-extra" value="${r.extra}"><span class="helper-text">Постоянная добавка для этого диапазона (обычно 0, кроме последнего)</span></div>
+                    <div><label>Максимальный объем документов (млн, пусто = ∞)</label><input type="number" class="range-max" value="${r.max === null ? '' : r.max}"><span class="helper-text">Верхняя граница диапазона, для которого действует коэффициент. Пример: 3 — для объёма до 3 млн. Если поле пустое — диапазон до бесконечности</span></div>
+                    <div><label>Коэффициент (ГБ на млн)</label><input type="number" step="0.1" class="range-coeff" value="${r.coeff}"><span class="helper-text">Сколько дополнительных гигабайт диска добавлять на каждый миллион документов внутри данного диапазона. Пример: 1,5 означает +1,5 ГБ на миллион</span></div>
+                    <div><label>Дополнительный фиксированный запас (ГБ)</label><input type="number" class="range-extra" value="${r.extra}"><span class="helper-text">Постоянное значение (в гигабайтах), которое добавляется к диску для всех объёмов в этом диапазоне (обычно 0, кроме последнего диапазона, где может быть +20 ГБ)</span></div>
                 </div>`).join('')}
             </div>
             <button id="addRangeBtn" class="btn-small">+ Добавить диапазон</button>
-            <div class="admin-form-group config-block"><label>Рекомендуемый диск: добавка к минимальному (ГБ)</label><input type="number" id="diskPadding" value="${s.diskRecommendedPadding}"><span class="helper-text">Запас сверх минимального расчетного объема. Пример: 30</span></div>
+            <div class="admin-form-group config-block"><label>Рекомендуемый диск: добавка к минимальному (ГБ)</label><input type="number" id="diskPadding" value="${s.diskRecommendedPadding}"><span class="helper-text">Фиксированный запас сверх минимального расчетного дискового пространства для получения рекомендуемого значения. Пример: 30 ГБ</span></div>
             
             <h4>Режим «Только Справочная система»</h4>
-            <div class="admin-form-group config-block"><label>RAM (ГБ)</label><input type="number" id="refRam" value="${s.referenceModeFactor.ram_gb}"><span class="helper-text">Объем оперативной памяти при выборе облегченного режима</span></div>
+            <div class="admin-form-group config-block"><label>RAM (ГБ)</label><input type="number" id="refRam" value="${s.referenceModeFactor.ram_gb}"><span class="helper-text">Объем оперативной памяти, используемый вместо базового, когда выбран облегченный режим развертывания</span></div>
             <div class="admin-form-group config-block"><label>CPU ядер</label><input type="number" id="refCores" value="${s.referenceModeFactor.cpu_cores}"><span class="helper-text">Количество ядер для облегченного режима</span></div>
             <div class="admin-form-group config-block"><label>CPU частота (ГГц)</label><input type="number" step="0.1" id="refFreq" value="${s.referenceModeFactor.cpu_freq_ghz}"><span class="helper-text">Тактовая частота для облегченного режима</span></div>
         `;
@@ -1221,8 +1230,8 @@
         if (addTierBtn) {
             addTierBtn.onclick = () => {
                 config.scaling.userTiers.push({ min: 1, max: null, ramMultiplier: 1.0, extraCores: 0, targetFreq: null });
-                renderScalingTab(); // перерисовываем только вкладку масштабирования
-                // после перерисовки нужно заново привязать обработчики (вызывается внутри renderAdminPanel)
+                renderScalingTab();
+                attachAdminEventListeners(); // перепривязываем обработчики после обновления
             };
         }
         const removeTierBtns = document.querySelectorAll('.remove-tier');
@@ -1232,6 +1241,7 @@
                 if (!isNaN(idx) && config.scaling.userTiers.length > 1) {
                     config.scaling.userTiers.splice(idx, 1);
                     renderScalingTab();
+                    attachAdminEventListeners();
                 } else if (config.scaling.userTiers.length === 1) {
                     alert('Должен остаться хотя бы один диапазон');
                 }
@@ -1243,6 +1253,7 @@
             addRangeBtn.onclick = () => {
                 config.scaling.diskFormula.ranges.push({ max: null, coeff: 1.0, extra: 0 });
                 renderScalingTab();
+                attachAdminEventListeners();
             };
         }
         const removeRangeBtns = document.querySelectorAll('.remove-range');
@@ -1252,6 +1263,7 @@
                 if (!isNaN(idx) && config.scaling.diskFormula.ranges.length > 1) {
                     config.scaling.diskFormula.ranges.splice(idx, 1);
                     renderScalingTab();
+                    attachAdminEventListeners();
                 } else if (config.scaling.diskFormula.ranges.length === 1) {
                     alert('Должен остаться хотя бы один диапазон');
                 }

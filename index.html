@@ -609,7 +609,7 @@
             { param: "Операционная система", minVal: `64-разрядная: Windows Server 2012/2016/2019/2022/2025 или Linux (ядро 3.0+ / Астра / Альт / РЕД / Атлант)`, recVal: `—` },
             { param: "Настройки энергопотребления", minVal: "BIOS: макс. производительность; ОС: план «Высокая производительность»", recVal: isVirtual ? "Хост + гость — одинаковый план макс. производительности" : "—" }
         ];
-        rows.forEach(r => { let tr = document.createElement('tr'); tr.innerHTML = `<td><strong>${r.param}</strong><td>${r.minVal}</td><td>${r.recVal}</table>`; tbody.appendChild(tr); });
+        rows.forEach(r => { let tr = document.createElement('tr'); tr.innerHTML = `<tr><strong>${r.param}</strong></td><td>${r.minVal}</td><td>${r.recVal}</td>`; tbody.appendChild(tr); });
     }
 
     function renderClientTables(winReqs, linReqs) {
@@ -951,23 +951,37 @@
     document.getElementById('saveConfigBtn').onclick = () => { collectAdminData(); saveConfig(); };
     document.getElementById('resetConfigBtn').onclick = () => { if (confirm('Вернуть все исходные значения?')) { localStorage.removeItem('suntd_calculator_config'); location.reload(); } };
     document.getElementById('exportConfigBtn').onclick = () => { let dataStr = JSON.stringify(config, null, 2); let blob = new Blob([dataStr], {type:'application/json'}); let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = 'calculator_config.json'; a.click(); URL.revokeObjectURL(url); };
-    document.getElementById('importConfigBtn').onclick = async () => {
+    document.getElementById('importConfigBtn').onclick = () => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'application/json';
-        input.onchange = async (e) => {
+        input.onchange = (e) => {
             const file = e.target.files[0];
-            if (!file) return;
-            try {
-                let content = await file.text();
-                if (content.charCodeAt(0) === 0xFEFF) content = content.slice(1);
-                const imported = JSON.parse(content);
-                config = deepMerge(DEFAULT_CONFIG, imported);
-                saveConfig();
-            } catch (err) {
-                console.error(err);
-                alert(`Ошибка импорта: ${err.message}\nПроверьте JSON на синтаксические ошибки.\nПодробности в консоли (F12).`);
+            if (!file) {
+                alert('Файл не выбран');
+                return;
             }
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    let content = ev.target.result;
+                    if (content === undefined || content === null) {
+                        throw new Error('Содержимое файла не определено. Возможно, файл повреждён.');
+                    }
+                    if (content.charCodeAt(0) === 0xFEFF) content = content.slice(1);
+                    const imported = JSON.parse(content);
+                    config = deepMerge(DEFAULT_CONFIG, imported);
+                    saveConfig();
+                } catch (err) {
+                    console.error('Ошибка импорта:', err);
+                    alert(`Ошибка импорта: ${err.message}\nПроверьте файл на корректность JSON.\nПодробности в консоли (F12).`);
+                }
+            };
+            reader.onerror = (err) => {
+                console.error('Ошибка чтения файла:', err);
+                alert('Не удалось прочитать файл. Возможно, файл повреждён или слишком большой.');
+            };
+            reader.readAsText(file, 'UTF-8');
         };
         input.click();
     };
